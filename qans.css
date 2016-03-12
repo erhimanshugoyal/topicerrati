@@ -1,0 +1,336 @@
+/* CSS declarations go here */
+.selected{
+    background-color: green;
+}
+.rcorners2 {
+    border-radius: 25px;
+    border: 2px solid #6495ED;
+    padding: 20px; 
+    width: 55%;
+    margin-left:5%;
+    float:left;
+}
+
+.search_box {
+	height:40px;
+	width:69%;
+	margin-left:3%;
+}
+
+.button {
+    background-color: white;
+    border: none;
+    color: black;
+	padding: 0px 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 11px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 10000; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+/* The Close Button */
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+a:link{color:black}
+a:active{color:blue}
+a:visited{color:black}
+a:hover{color:blue}
+/* ----------------------------------
+Css Profile Edit Dropdown
+Author: iModDesign
+Version: 1.0
+------------------------------------ */
+ul, li {
+	list-style:none;
+	padding:0;
+	margin:0;
+}
+
+.profile-wrapper {
+	width:200px;
+	position:relative;
+	margin-left:85%;
+	margin-top:1%;	
+}
+/*
+.profile-wrapper::after {
+	content: '';
+	position: absolute;
+	top: 20px;
+	right: 10px;
+	border-color: #333 transparent transparent;
+	border-width: 6px;
+	border-style: solid;
+}
+.profile-wrapper::before {
+	content: '';
+	position: absolute;
+	top: 20px;
+	right: 10px;
+	border-color: #eee transparent transparent;
+	border-width: 6px;
+	border-style: solid;
+}
+.profile-wrapper:hover::after {
+	border-color: #111 transparent transparent;	
+}*/
+
+.profile {
+	padding:10px;
+	border-radius:3px;
+	position:absolute;
+	background-color:#6495ED;
+	color:white;
+}
+.profile:hover {
+	cursor:pointer;
+	position:absolute;
+}
+.profile .name {
+	font-size:12px;
+	line-height:26px;
+	margin-left:10px;
+	color:black;
+}
+.profile:hover .name {
+	color:#0088cc;
+}
+.profile img {
+	width:25px;
+	display:inline;
+	float:left;
+	border:1px solid #111;
+	border-radius:3px;
+	box-shadow:0 0 3px rgba(0, 0, 0, 0.5) inset;
+}
+
+/* hide menu */
+.menu {
+	display:none;
+	clear:both;
+	margin:20px 0 0 0;
+}
+.menu li {
+	font-size:12px;
+	margin:10px 0 0;
+}
+.menu li a {
+	color:black;
+}
+.menu li:hover a {
+	color:green;
+}
+
+/* hover profile show menu */
+.profile:hover .menu {
+	display:block;
+}
+
+.upvoted_icon {
+font-size: 20px; margin-right: 0%;cursor:pointer;color:#6495ED;
+}
+.upvote_icon {
+font-size: 20px; margin-right: 0%;cursor:pointer;color:gray;
+}
+.downvoted_icon {
+font-size: 20px; margin-left: 1%;cursor:pointer;color:orangered;
+}
+.downvote_icon {
+font-size: 20px; margin-left: 1%;cursor:pointer;color:gray;
+}
+
+.chat
+{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width:100%;
+}
+
+.chat li
+{
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px dotted #B3A9A9;
+}
+
+.chat li.left .chat-body
+{
+    margin-left: 60px;
+}
+
+.chat li.right .chat-body
+{
+    margin-right: 60px;
+}
+
+
+.chat li .chat-body p
+{
+    margin: 0;
+    color: #777777;
+    font-size:12px;
+}
+
+.panel .slidedown .glyphicon, .chat .glyphicon
+{
+    margin-right: 5px;
+}
+
+.panel-body
+{
+    overflow-y: scroll;
+    height: 250px;
+    width:100%;
+}
+
+::-webkit-scrollbar-track
+{
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar
+{
+    width: 12px;
+    background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar-thumb
+{
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: #555;
+}
+.badge1 {
+   position:relative;
+}
+.badge1[data-badge]:after {
+   content:attr(data-badge);
+   position:absolute;
+   top:-10px;
+   right:-10px;
+   font-size:.7em;
+   background:orangered;
+   color:white;
+   width:18px;height:18px;
+   text-align:center;
+   line-height:18px;
+   border-radius:50%;
+   box-shadow:0 0 1px #333;
+}
+.badge2 {
+   position:relative;
+}
+.badge2[data-badge]:after {
+   content:attr(data-badge);
+   position:absolute;
+   top:-17px;
+   right:-27px;
+   font-size:.7em;
+   background:orangered;
+   color:white;
+   width:18px;height:18px;
+   text-align:center;
+   line-height:18px;
+   border-radius:50%;
+   box-shadow:0 0 1px #333;
+}
+
+.dropdown {
+    display:inline-block;
+    margin-top:2%;
+    padding:2px;
+	padding-top:20px;
+  }
+
+
+.glyphicon-bell {
+    color:white; 
+    font-size:1.5rem;
+  }
+
+.notifications {
+   min-width:300px; 
+  }
+  
+  .notifications-wrapper {
+     overflow:auto;
+      max-height:250px;
+    }
+    
+ .menu-title {
+     color:#337ab7;
+     font-size:1.5rem;
+      display:inline-block;
+      }
+ 
+.glyphicon-circle-arrow-right {
+      margin-left:10px;     
+   }
+  
+   
+ .notification-heading, .notification-footer  {
+ 	padding:2px 10px;
+       }
+      
+        
+.dropdown-menu.divider {
+  margin:5px 0;          
+  }
+
+.item-title {
+  
+ font-size:1.3rem;
+ color:#000;
+    
+}
+
+.notifications a.content {
+ text-decoration:none;
+ background:#ccc;
+
+ }
+    
+.notification-item {
+ padding:10px;
+ margin:5px;
+ background:#ccc;
+ border-radius:4px;
+ }
+

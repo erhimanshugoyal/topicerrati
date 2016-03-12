@@ -1,0 +1,789 @@
+<head>
+<!-- include libraries(jQuery, bootstrap) -->
+<!--
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> 
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css" />
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<link href="summernote.css" rel="stylesheet">
+<script src="summernote.js"></script>-->
+</head>
+<!--<body style="background-image: url('/home/karan/Desktop/bg2.jpg');">
+Total number of questions {{count}}.
+  {{> question}}
+  {{# each ques}}
+  {{> everyq}}
+  {{/each }}
+  {{> rightrecent}}
+</body>
+-->
+<template name="main">
+      {{>question}}
+      {{> yield}}
+    <p style="position:fixed;bottom:0;width:100%;">Copyright &copy; Topicerrati.com, 2015-2016.</p>
+</template>
+
+<template name="login">
+    <h2>Login</h2>
+</template>
+<template name="chatbox" >
+<div id="chatbox" style="float:left;position:fixed;margin-top:-20%;margin-left:80%;width:100%;height:auto;border: 2px solid #f7f7f7;display:none;">
+	<div class="container" style="margin-left:-7%;width:55%;">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="panel panel-primary">
+                <div class="panel-heading" style="width:100%;">
+		    <input type="hidden" id="to_msg" value="{{chatter}}" />
+                    <span class="glyphicon glyphicon-comment"></span> {{this.tab_user}}
+                    <div class="btn-group pull-right">
+                        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                            <span class="glyphicon glyphicon-chevron-down"></span>
+                        </button>
+			<!--
+                        <ul class="dropdown-menu slidedown">
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-refresh">
+                            </span>Refresh</a></li>
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-ok-sign">
+                            </span>Available</a></li>
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-remove">
+                            </span>Busy</a></li>
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-time"></span>
+                                Away</a></li>
+                            <li class="divider"></li>
+                            <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-off"></span>
+                                Sign Out</a></li>
+                        </ul>
+			-->
+                    </div>
+                </div>
+                <div class="panel-body" id="panel_body">
+                    <ul class="chat">
+			{{#each chat_messages}}
+			{{#if whoisboss}}
+                        <li class="right clearfix"><span class="chat-img pull-right">
+                            <img src="{{user_image.url}}" alt="User Avatar" class="img-circle" />
+                        </span>
+                            <div class="chat-body clearfix">
+                                <div class="header">
+                                    <small class=" text-muted"><span class="glyphicon glyphicon-time"></span>13 mins ago</small>
+                                    <strong class="pull-right primary-font">X</strong>
+                                </div>
+                                <p>
+                                {{message}}
+				</p>
+                            </div>
+                        </li>
+			{{else}}
+			<li class="left clearfix"><span class="chat-img pull-left">
+                            <img src="{{tab_user_image.url}}" alt="User Avatar" class="img-circle" />
+                        </span>
+                            <div class="chat-body clearfix">
+                                <div class="header">
+                                    <strong class="primary-font">Y</strong> <small class="pull-right text-muted">
+                                        <span class="glyphicon glyphicon-time"></span>12 mins ago</small>
+                                </div>
+                                <p>
+                               	{{message}}
+				</p>
+                            </div>
+                        </li>
+			{{/if}}
+			{{/each}}
+                    </ul>
+                </div>
+                <div class="panel-footer" style="width:100%;">
+                    <div class="input-group">
+                        <input id="btn-input" type="text" class="form-control input-sm" placeholder="Type your message here..." />
+                        <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat">
+                                Send</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</template>
+<template name="chat">
+<div style="float:left;position:fixed;margin-top:40%;margin-left:5%;width:16%;height:auto;border: 2px solid #f7f7f7;">
+<div style="background-color:#337ab7;color:white;">Chat({{usersonline.count}})</div>
+<div>
+{{#each usersonline}}
+	{{#if legaluser}}
+	{{else}}
+	{{#if this.status.idle}}
+	<span data-template="{{this._id}}" class="label label-warning chat_new" style="margin-top:1%;cursor:pointer;">{{username}}</span><br>
+  	{{/if}}
+	{{#if this.status.online}}
+	<span data-template="{{this._id}}" class="label label-success chat_new" style="margin-top:1%;cursor:pointer;">{{username}}</span><br>
+  	{{/if}}
+	{{/if}}
+{{/each}}
+	{{> Template.dynamic template="chatbox" data=tabData}}
+</div>
+</div>
+</template>
+<template name="home">
+      {{>rightrecent}}
+      {{# each ques}}
+      {{> everyq}}
+      {{/each }}
+	{{#if currentUser}}
+	{{>chat}}
+	{{/if}}
+	{{#if moreResults}}
+	    <div id="showMoreResults">
+        	<span class="loading" style="background-color:beige;margin-left: 49%;border-radius:1px;border: 2px solid #f7f7f7;">Loading...</span>
+	    </div>
+	{{/if}}
+</template>
+
+
+<template name="questionPage">
+	{{>rightrecent}}
+	{{>everyq}}
+</template>
+<template name="topic">
+	<div style="width:100%">
+	<div style="float:left;width:20%;margin-top:7%;margin-left:5%;">
+		<h3>{{title}}</h3>
+		  {{#if currentUser}}
+                                {{#if this.is_followed}}
+                                <button id="follow{{_id}}" class="btn follow" style="background-color:#337ab7;color:white">Unfollow</button>
+                                {{else}}
+                                <button id="follow{{_id}}" class="btn follow" style="background-color:#337ab7;color:white">Follow</button>
+                                {{/if}}
+		{{/if}}
+                                <button id="following{{_id}}" class="btn following" style="background-color:#BB64ED;color:white">Followers[{{this.followers.count}}]</button>
+
+	</div>
+	<div style="float:left;width:45%;margin-top:10%;">
+				{{#if currentUser}}
+        		        <div id="summernote" style="z-index:100000;"></div>
+        			<button id="post_in_topic{{_id}}" class="btn post_topic" style="background-color:#337ab7;color:white;margin-left:96%;">Post</button>
+				{{/if}}
+	{{#each topicanswers}}
+		<div style="word-wrap:break-word;font-size:16px;margin-left:4%;border-radius:4px;border: 2px solid #337ab7;margin-right:-5%;margin-top:2%"> <b><a href="/user/{{this.answer_user._id}}">
+                         {{#if this.answer_user_image}}
+                        <img style="max-height:50px;max-width:50px;" src="{{this.answer_user_image.url store='thumbs'}}">
+                        {{/if}}
+                        {{this.answer_user.username}} :</a></b> {{{text}}}</div>
+
+	{{/each}}
+	</div>
+	</div>
+</template>
+
+<template name="userprofile">
+	<div style="float:left;width:100%;margin-top:5%;">
+		<div style="float:left;margin-top:5%;width:100%;margin-left:12%;">
+			<div style="float:left;width:20%;">
+			{{#each files}}
+			  <img src="{{url store="thumbs"}}">
+			{{/each}}
+			{{#if legaluser}}
+			<input  type="file" class="myFileInput"  alt="Submit" width="48" height="48">
+			{{/if}}
+			</div>
+			<div>
+				{{#if currentUser}}
+				{{#if legaluser}}
+				{{else}}
+				{{#if this.is_followed}}
+				<button id="follow{{_id}}" class="btn follow" style="background-color:#337ab7;color:white">Unfollow</button>
+				{{else}}
+				<button id="follow{{_id}}" class="btn follow" style="background-color:#337ab7;color:white">Follow</button>
+				{{/if}}
+				{{/if}}
+				<button id="following{{_id}}" class="btn following" style="background-color:#BB64ED;color:white">Followers[{{this.followers.count}}]</button>
+				{{/if}}
+			</div>
+			<table>
+			<tr style="margin-bottom:1%;">
+			<td style="width:20%;padding:5px;"><b>Name</b></td>
+			<td style="width:50%;">
+			<h2 contenteditable="false" id="user_name">{{username}}
+			</h2>
+			</td>
+			{{#if legaluser}}
+			<td style="width:30%;">
+			<span><button id="edit_name" class="btn" style="background-color:#337ab7;color:white">Edit Name</button></span>
+			</td>
+			{{/if}}
+			</tr>
+			<tr style="margin-bottom:1%;">
+			<td><b>Occupation</b></td>
+			<td>
+			<h3 contenteditable="false" id="user_occupation">{{profile.occupation}}</h3>
+			</td>
+			{{#if legaluser}}
+			<td>
+			<span><button id="edit_occupation" class="btn" style="background-color:#337ab7;color:white">Edit Occupation</button></span>
+			</td>
+			{{/if}}
+			</tr>
+			<tr style="margin-bottom:1%;" >
+			<td><b>Bio</b></td>
+			<td>	
+				<h3><span contenteditable="false" id="user_bio">{{profile.bio}}</span></h3>
+			</td>
+			{{#if legaluser}}
+			<td>
+				<span><button id="edit_bio" class="btn" style="background-color:#337ab7;color:white">Edit Bio</button></span>
+			</td>
+			{{/if}}
+			</tr>
+			<tr style="margin-bottom:1%;">
+			<td><b>Interests</b></td>
+			<td>
+			<h3 id="user_interest" contenteditable="false">{{profile.interest}}</h3>
+<!--			<input type="text" id="user_interest" value="Books, Movies, Science , Fiction" contenteditable="false">-->
+			</td>
+			{{#if legaluser}}
+			<td><span><button id="edit_interest" class="btn" style="background-color:#337ab7;color:white">Edit Interests</button></span></td>
+			{{/if}}
+			</tr>
+			</table>
+		</div>
+	</div>
+</template>
+<template name="index">
+	{{#if currentUser}}
+<!--		<p>Signed in as {{currentUser.username}}.</p>
+		<li><button class="btn" onclick="Meteor.logout()" style="background-color:#337ab7;color:white">Sign out</button></li>-->
+		<ul class="profile-wrapper">
+			<li>
+				<!-- user profile -->
+				<div class="profile">
+						<img style="max-height:50px;max-width:50px;" src="{{profilepic_dd.url}}" />
+						<a href="#" class="name" style="text-decoration:none;color:white;">{{currentUser.username}}</a>
+					
+					<!-- more menu -->
+					<ul class="menu">
+						<li><a style="text-decoration:none;color:white;" href="#">Change Password</a></li>
+						<li><a id="edit_prof" style="text-decoration:none;color:white;">Edit</a></li>
+						<li><a id="log_out" style="text-decoration:none;color:white;">Log out</a></li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+	{{else}}
+		 <span><button class="btn" data-modal="signUp" style="background-color:blue;color:white">Sign up</button></span>
+                <span><button class="btn" data-modal="signIn" style="background-color:#337ab7;color:white">Sign in</button></span>
+	{{/if}}
+</template>
+
+<template name="modal_signIn">
+	<div class="modal fade" role="dialog" style="z-index:100000;">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">
+						<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+					</button>
+					<h4 class="modal-title">Sign in</h4>
+				</div>
+				
+				<div class="modal-body">
+					
+				<div style="margin-left:20%;">
+				 <script src="https://apis.google.com/js/client:platform.js?onload=render" async defer></script>
+                            <script>
+                                function render() {
+                                    gapi.signin.render('customBtn', {
+                                    'callback': 'signinCallback()',
+                                    'clientid': '416834881013-jghvl5iln09ee83linvflhnurppph1f0.apps.googleusercontent.com',
+                                    'cookiepolicy': 'single_host_origin',
+                                    'requestvisibleactions': 'http://schema.org/AddAction',
+                                    'scope': 'https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/userinfo.email'
+                                    });
+                                }
+				</script>
+
+                                <div id="customBtn" class="customGPlusSignIn" style="display: inline-block; background: #dd4b39; color: white; white-space: nowrap; border-radius: 0px; width: 241px; cursor: pointer;margin-right:3%;">
+                                    <span class="icon" style="display: inline-block; vertical-align: middle; height: 35px; border-right: #bb3f30 1px solid; width: 42px;"><i class="fa fa-google-plus" style="font-size: 19px; padding: 10px;"></i></span>
+                                    <span class="buttonText" style="display: inline-block; vertical-align: middle; padding-left: 23px; padding-right: 35px; font-size: 11.5px; font-weight: bold; font-family: 'Roboto',arial,sans-serif;">Sign in with Google +</span>
+                                </div>
+                            				
+				  <div id="fb-root" class="customGPlusSignIn" style="display: inline-block; background:rgba(53, 79, 136, 1); color: white; white-space: nowrap; border-radius: 0px; width: 241px; cursor: pointer;margin-top:1%;">
+                                    <span class="icon" style="display: inline-block; vertical-align: middle; height: 35px; border-right: white 1px solid; width: 42px;"><i class="fa fa-facebook" style="font-size: 19px; padding: 10px;"></i></span>
+                                    <span class="buttonText" style="display: inline-block; vertical-align: middle; padding-left: 23px; padding-right: 35px; font-size: 11.5px; font-weight: bold; font-family: 'Roboto',arial,sans-serif;"><a facebook="" click="checkLoginState()" href="" class="" style="color:white;">Sign in with Facebook</a></span>
+                                </div>				
+				</div>
+				
+		
+					<p>Use the form below to sign in.</p>
+					
+					<form role="form" class="form-horizontal">
+						
+						<div class="form-group">
+							<label class="control-label col-sm-3" for="modal_signIn_username">Username</label>
+							<div class="col-sm-9">
+								<input type="input" class="form-control" id="modal_signIn_username" placeholder="Enter username">
+								{{#with usernameError}}
+									<span class="help-block">{{this}}</span>
+								{{/with}}
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<label class="control-label col-sm-3" for="modal_signIn_password">Password</label>
+							<div class="col-sm-9">
+								<input type="password" class="form-control" id="modal_signIn_password" placeholder="Enter password">
+								{{#with passwordError}}
+									<span class="help-block">{{this}}</span>
+								{{/with}}
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<div class="col-sm-offset-3 col-sm-9">
+								<input type="submit" class="btn btn-success" value="Sign in">
+							</div>
+					  </div>
+					</form>
+					
+				</div>
+				
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+</template>
+
+<template name="modal_signUp">
+	<div class="modal fade" role="dialog" style="z-index:10000;padding-top:none;">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">
+						<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+					</button>
+					<h4 class="modal-title">Create account</h4>
+				</div>
+				
+				<div class="modal-body">
+					
+					<p> Use the form below to create an account on this website.</p>
+					
+					<form role="form" class="form-horizontal">
+						
+						<div class="form-group">
+							<label class="control-label col-sm-3" for="modal_signUp_username">Username</label>
+							<div class="col-sm-9">
+								<input type="input" class="form-control" id="modal_signUp_username" placeholder="Enter username" value="{{username}}">
+								{{#with usernameError}}
+									<span class="help-block">{{this}}</span>
+								{{/with}}
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<label class="control-label col-sm-3" for="modal_signUp_email">Email address</label>
+							<div class="col-sm-9">
+								<input type="email" class="form-control" id="modal_signUp_email" placeholder="Enter email" value="{{email}}">
+								{{#with emailError}}
+									<span class="help-block">{{this}}</span>
+								{{/with}}
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<label class="control-label col-sm-3" for="modal_signUp_password0">Password</label>
+							<div class="col-sm-9">
+								<input type="password" class="form-control" id="modal_signUp_password0" placeholder="Password" value="{{password0}}">
+								{{#with password0Error}}
+									<span class="help-block">{{this}}</span>
+								{{/with}}
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<label class="control-label col-sm-3" for="modal_signUp_password1">Password (again)</label>
+							<div class="col-sm-9">
+								<input type="password" class="form-control" id="modal_signUp_password1" placeholder="Retype password" value="{{password1}}">
+								{{#with password1Error}}
+									<span class="help-block">{{this}}</span>
+								{{/with}}
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<div class="col-sm-offset-3 col-sm-9">
+								<div class="checkbox">
+									<label>
+										<input type="checkbox" id="modal_signUp_acceptsUserAgreement" checked="{{isUserAgrementAccepted}}"> I understand and accept the <a href="#" class="clickRoutesToUserAgreement">User Agreement</a>.
+									</label>
+								</div>
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<div class="col-sm-offset-3 col-sm-9">
+								<input type="submit" class="btn btn-success" value="Create account" disabled="{{isAnythingWrong}}">
+							</div>
+					  </div>
+						
+					</form>
+					
+				</div>
+				
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+</template>
+
+<template name="question">
+
+<div style="float:left;width:100%;position:fixed;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
+	<div style="float:left;width:22%;margin-left:5%;color:white"><h1><a style="color:white;" href="/">Topicerrati</a></h1>
+		<div>Question Everything</div>
+	</div>
+	<div style="float:left;width:50%;margin-top:1%;border-radius:25px;margin-right:10%;">
+		<form>
+		 {{> EasySearch.Input index=questionsIndex attributes=inputAttributes}}
+		  <input type="submit" style="height:40px;width:172px;border-radius:80px;margin-top:10px;" value="Search/Ask">
+		  <ul>
+		   {{#EasySearch.IfInputEmpty index=questionsIndex}}
+		   {{else}}
+		    {{#EasySearch.Each index=questionsIndex}}
+		      <li><a href="/question/{{unique_q_id}}">{{text}}</a></li>
+		    {{/EasySearch.Each}}
+		  {{/EasySearch.IfInputEmpty}}
+		  </ul>
+		</form>
+	</div>
+	<div style="margin-top:1%;">
+		{{>index}}
+	</div>
+<!--
+	<div style="float:left;width:20%;margin-top:1%;">
+	<button id="myBtn">Open Modal</button>
+	<div id="myModal" class="modal">
+
+		  <div class="modal-content">
+		    <span class="close">×</span>
+			{{> loginButtons}}
+		</div>
+	
+	</div>
+	</div>-->
+</div>
+</template>
+<template name="everyq">
+<div id="quest{{_id}}" style="float:left;width:100%;margin-top:7%;">
+	<div class="rcorners2" style="margin-left:24%;">
+<!--Make a link here to every question, that would open up on a new page-->
+		<div style="font-size:18px;"> Question : <b><a href="/question/{{unique_q_id}}">{{text}}</a></b></div>
+		<div style="font-size:10px;"><a href="/user/{{this.question_user._id}}">
+		{{#if this.question_user_image}}
+                <img style="max-height:50px;max-width:50px;" src="{{this.question_user_image.url store='thumbs'}}">
+                {{/if}}
+		{{this.question_user.username}}</a></div>
+		<div style="margin-top:1%;float:left;width:100%;background-color: #F1F1F1;">
+			{{#if this.is_answered.count}}
+			 <!--<div style="float:left;width:20%">
+                        <button class="answer {{_id}}" id="answer{{_id}}">Edit Answer</button>
+                        </div>-->
+			{{else}}
+			<div style="float:left;width:20%">
+			<button class="answer {{_id}}" id="answer{{_id}}">Answer</button>
+			</div>
+			{{/if}}
+			<!--
+			<div style="float:left;width:20%">
+			<b>Comment</b>
+			</div>-->
+			<div style="float:left;width:20%">
+			{{#if this.isupvoted.count}}
+			<i class="fa fa-thumbs-up upvote upvoted_icon"  id="upvotei{{_id}}"></i>
+			<button class="upvote {{_id}} button " id="upvote{{_id}}">Upvoted</button>[{{this.upvotesObj.count}}]
+			{{else}}
+			<i class="fa fa-thumbs-up upvote upvote_icon"  id="upvotei{{_id}}"></i>
+			<button class="upvote {{_id}} button" id="upvote{{_id}}">Upvote</button>[{{this.upvotesObj.count}}]
+			{{/if}}
+			</div>
+			<div  style="float:left;width:20%">
+			{{#if this.isdownvoted.count}}
+			<i class="fa fa-thumbs-down downvoting downvoted_icon"  id="downvotei{{_id}}"></i>
+			<button class="downvoting {{_id}} button" id="downvote{{_id}}">Downvoted</button>[{{this.downvotesObj.count}}]
+			{{else}}
+			<i class="fa fa-thumbs-down downvoting downvote_icon"  id="downvotei{{_id}}"></i>
+			<button class="downvoting {{_id}} button" id="downvote{{_id}}">Downvote</button>[{{this.downvotesObj.count}}]
+			{{/if}}
+			</div>
+		</div>
+		<div style="margin-top:5%;display:none;" id="anser{{formatId _id}}">
+		<form>
+		{{>editor}}
+		<input type="submit" style="height:10%;width:20%;" name="Submit" value="Add Answer">
+		</form>
+		</div>
+		 {{#each this.answersObj}}
+                <div id="" style="margin-top:5%;background-color:#FCFCFC;">
+                <div style="word-wrap:break-word;font-size:15px;"> 
+		<b>Ans :</b>
+		{{#if this.is_answered.count}}
+		{{#if currentUser}}
+			<div style="float:right;">
+                        <button class="answer_edit {{question_id}}" id="answer_edit{{question_id}}" style="background-color:beige;">Edit Answer</button>
+                        </div>	
+		{{/if}}
+		{{/if}}
+		 {{{ans}}}</div>
+		<div style="font-size:10px;"><a href="/user/{{this.answer_user._id}}">
+		{{#if this.answer_user_image}}
+                <img style="max-height:50px;max-width:50%;" src="{{this.answer_user_image.url store='thumbs'}}">
+                {{/if}}
+{{this.answer_user.username}}</a></div>
+                {{>answer_voting}}
+                </div>
+                {{else}}
+
+                {{/each}}
+	</div>
+</div>
+</template>
+
+<template name="answer_voting">
+<div style="margin-top:1%;width:100%;">
+                        <div style="background-color:#F1F1F1;">
+			<span style="width:20%">
+			<i class="fa fa-comment comment_ans" id="comment_ansi{{_id}}" style="font-size:20px;color:gray;"></i>
+                        <button class="comment_ans {{_id}} button" id="comment_ans{{_id}}">Comment</button>
+			</span>
+                        <span style="width:20%">
+                        {{#if this.isupvotedans.count}}
+			<i class="fa fa-thumbs-up upvote_ans upvoted_icon"  id="upvote_ansi{{_id}}"></i>
+                        <button class="upvote_ans {{_id}} button" id="upvote_ans{{_id}}">Upvoted</button>[{{this.countupVoteAnsObj.count}}]
+                        {{else}}
+			<i class="fa fa-thumbs-up upvote_ans upvote_icon"  id="upvote_ansi{{_id}}"></i>
+                        <button class="upvote_ans {{_id}} button" id="upvote_ans{{_id}}">Upvote</button>[{{this.countupVoteAnsObj.count}}]
+                        {{/if}}
+                        </span>
+                        <span  style="width:20%">
+                        {{#if this.isdownvotedans.count}}
+			<i class="fa fa-thumbs-down downvoting_ans downvoted_icon"  id="downvote_ansi{{_id}}"></i>
+                        <button class="downvoting_ans {{_id}} button" id="downvote_ans{{_id}}">Downvoted</button>[{{this.countdownVoteAnsObj.count}}]
+                        {{else}}
+			<i class="fa fa-thumbs-down downvoting_ans downvote_icon"  id="downvote_ansi{{_id}}"></i>
+                        <button class="downvoting_ans {{_id}} button" id="downvote_ans{{_id}}">Downvote</button>[{{this.countdownVoteAnsObj.count}}]
+                        {{/if}}
+                        </span>
+			</div>
+			<!--For voting on comments-->
+			<div style="margin-top:5%;display:none;" id="comment{{formatId _id}}">
+                        <form>
+				<textarea id="comment_{{formatId _id}}" style="overflow:auto;width:75%;margin-left:5%;" name="comment_{{formatId_id}}"></textarea>
+                                <input type="submit" style="height:10%;width:20%;" name="Submit" value="Add Comment">
+                        </form>
+                        </div>
+			{{#if this.commentsmulti}}
+			<div style="margin:5%;background: none repeat scroll 0% 0% #F6F6F6;border: 1px solid #E2E2E2;border-radius: 2px;margin-top:0%;">
+			{{#each this.commentsmulti}}
+	                <div style="padding: 20px 20px;margin-left:5%">
+        	        <div style="word-wrap:break-word;font-size:13px;"> <b>Comment :</b> {{{comment}}}</div>
+			<div style="font-size:10px;">
+			 <a href="/user/{{this.comment_user._id}}">
+			 {{#if this.comment_user_image}}
+                                <img style="max-height:50px;max-width:50%;" src="{{this.comment_user_image.url store='thumbs'}}">
+                        {{/if}}
+
+			{{this.comment_user.username}}</a></div>
+			<div style="background-color: #F1F1F1;">
+			<span style="width:20%">
+			<button class="reply_comment {{_id}} button" id="reply_comment{{_id}}">Reply</button>
+                        {{#if this.isupvotedcomment.count}}
+			<i class="fa fa-thumbs-up upvote_comment upvoted_icon"  id="upvote_commenti{{_id}}"></i>
+                        <button class="upvote_comment {{_id}} button" id="upvote_comment{{_id}}">Upvoted</button>[{{this.countupVoteCommentObj.count}}]
+                        {{else}}
+			<i class="fa fa-thumbs-up upvote_comment upvote_icon"  id="upvote_commenti{{_id}}"></i>
+                        <button class="upvote_comment {{_id}} button" id="upvote_comment{{_id}}">Upvote</button>[{{this.countupVoteCommentObj.count}}]
+                        {{/if}}
+                        </span>
+                        <span  style="width:20%">
+                        {{#if this.isdownvotedcomment.count}}
+			<i class="fa fa-thumbs-down downvoting_comment downvoted_icon"  id="downvote_commenti{{_id}}"></i>
+                        <button class="downvoting_comment {{_id}} button" id="downvote_comment{{_id}}">Downvoted</button>[{{this.countdownVoteCommentObj.count}}]
+                        {{else}}
+			<i class="fa fa-thumbs-down downvoting_comment downvote_icon"  id="downvote_commenti{{_id}}"></i>
+                        <button class="downvoting_comment {{_id}} button" id="downvote_comment{{_id}}">Downvote</button>[{{this.countdownVoteCommentObj.count}}]
+                        {{/if}}
+                        </span>
+			</div>
+			{{>comment_reply}}
+			{{#each this.commentsreplymulti}}
+			<div style="padding: 5px 5px;margin-left:5%">
+                        <div style="word-wrap:break-word;font-size:12px;"> <b><a href="/user/{{this.reply_user._id}}">
+			 {{#if this.reply_user_image}}
+	                <img style="max-height:50px;max-width:50px;" src="{{this.reply_user_image.url store='thumbs'}}">
+        	        {{/if}}
+			{{this.reply_user.username}} :</a></b> {{{reply}}}</div>
+			</div>
+			{{else}}
+			{{/each}}
+			
+	                </div>
+        	        {{else}}
+
+                	{{/each}}
+			</div>
+			{{/if}}
+                </div>
+
+</template>
+<template name="comment_reply">
+   <!--For replying on comments-->
+                        <div style="margin-top:5%;display:none;" id="commentreply{{formatId _id}}">
+                        <form>
+                                <textarea id="commentreply_{{formatId _id}}" style="overflow:auto;width:75%;margin-left:5%;" name="commentreply_{{formatId_id}}"></textarea>
+                                <input type="submit" style="height:10%;width:20%;" name="Submit" value="Reply">
+                        </form>
+			</div>
+</template>
+<template name="editor">
+<div id="dat_{{_id}}" style="z-index:100000;">{{{text}}}</div>
+</template>
+<template name="quill_editor">
+<div id="editor-container-{{_id}}">
+    <div class="quill-wrapper" style="border: 1px solid #337ab7;">
+      <div id="full-toolbar-{{_id}}" class="toolbar ql-toolbar ql-snow">
+        <span class="ql-format-group">
+          <span title="Bold" class="ql-format-button ql-bold"></span>
+          <span class="ql-format-separator"></span>
+          <span title="Italic" class="ql-format-button ql-italic"></span>
+          <span class="ql-format-separator"></span>
+          <span title="Underline" class="ql-format-button ql-underline"></span>
+          <span class="ql-format-separator"></span>
+          <span title="Strikethrough" class="ql-format-button ql-strike"></span>
+        </span>
+        <span class="ql-format-group">
+          <span title="Text Color" class="ql-color ql-picker ql-color-picker">
+          </span>
+          <span class="ql-format-separator"></span>
+          <span title="Background Color" class="ql-background ql-picker ql-color-picker">
+          </span>
+        </span>
+        <span class="ql-format-group">
+          <span title="Link" class="ql-format-button ql-link"></span>
+        </span>
+	<span title="Image" class="ql-format-button ql-image"></span>
+      </div>
+	<div id="dat_{{_id}}" class="prevent_default" style="height:100px;">
+      <div id="full-editor-{{_id}}" class="editor ql-container ql-snow">
+<!--        <div class="ql-multi-cursor">
+          <span class="cursor hidden" style="top: 218px; left: 277px; height: 15px;">
+            <span class="cursor-flag">
+              <span class="cursor-triangle top" style="border-bottom-color: rgba(255, 153, 51, 0.901961);"></span>
+              <span class="cursor-name" style="background-color: rgba(255, 153, 51, 0.901961);">Gandalf</span>
+              <span class="cursor-triangle bottom" style="border-top-color: rgba(255, 153, 51, 0.901961);"></span>
+            </span>
+            <span class="cursor-caret" style="background-color: rgba(255, 153, 51, 0.901961);"></span>
+          </span>
+        </div>
+-->
+        <div class="ql-editor" id="ql-editor" contenteditable="true">
+	</div>
+	<div class="ql-paste-manager" contenteditable="true"></div>
+	</div>
+    </div>
+  </div>
+</div>
+</template>
+
+<template name="ans_tmp">
+<div class="editor" id="editor">
+        <input type="textarea" id="answer_1">
+    </div>
+</template>
+
+<template name="rightrecent">
+<div style="float:left;position:fixed;margin-top:10%;border: 1px solid #337ab7;margin-left:5%;width:16%;">
+	{{#if currentUser}}
+	  <div style="float:left;margin-top:1%;margin-left:5%;width:100%;">
+        	<button id="new_topic" data-modal="newTopic" class="btn follow" style="background-color:#337ab7;color:white;width:90%;">Start A Topic</button>
+	  </div>
+	{{/if}}
+	<div style="float:left;margin-top:1%;margin-left:5%;width:100%;">
+	<div ><h3>Topics</h3></div>
+	</div>
+	<form>
+                 {{> EasySearch.Input index=topicsIndex attributes=inputAttributes}}
+                  <ul style="margin-left:10%;">
+                    {{#EasySearch.Each index=topicsIndex}}
+			<i class="fa fa-hashtag" style="width: 10%;float: left;color: #337ab7;"></i>	
+                      <li><a href="/topic/{{unique_q_id}}">{{title}}</a></li>
+                    {{/EasySearch.Each}}
+                  </ul>
+         </form>
+<!--	 <ul style="margin-left:10%;">
+	{{#each toptopic}}
+		<li><a href="/topic/{{this._id}}">{{title}}</a></li>
+	{{/each}}
+	</ul> -->
+</div>
+</template>
+
+<template name="rightrecent_trending">
+<div style="float:left;position:fixed;margin-top:10%;border: 1px solid #337ab7;margin-left:82%;width:16%;">
+
+</div>
+</template>
+
+<template name="modal_newTopic">
+        <div class="modal fade" role="dialog" style="z-index:10000;">
+                <div class="modal-dialog">
+                        <div class="modal-content">
+
+                                <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">
+                                                <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                                        </button>
+                                        <h4 class="modal-title">Start Discussion</h4>
+                                </div>
+
+                                <div class="modal-body">
+
+
+                                        <form role="form" class="form-horizontal">
+
+                                                <div class="form-group">
+                                                        <label class="control-label col-sm-3" for="newTopic">New Topic</label>
+                                                        <div class="col-sm-9">
+                                                                <input type="input" class="form-control" id="modal_newTopic_topic" placeholder="Enter topic">
+                                                                {{#with usernameError}}
+                                                                        <span class="help-block">{{this}}</span>
+                                                                {{/with}}
+                                                        </div>
+                                                </div>
+
+
+                                                <div class="form-group">
+                                                        <div class="col-sm-offset-3 col-sm-9">
+                                                                <input type="submit" class="btn btn-success" value="START">
+                                                        </div>
+                                          </div>
+                                        </form>
+
+                                </div>
+
+                                <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                </div>
+
+                        </div>
+                </div>
+        </div>
+</template>
+
