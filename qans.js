@@ -71,7 +71,7 @@ Template.registerHelper('formatDate', function(date) {
   return moment(date).fromNow();;
 });
 Template.chat.usersonline = function(){
-return Meteor.users.find({ $and: [{ "_id": { $ne: Meteor.userId() } },{ "status.online": true }]},{
+	return Meteor.users.find({ $and: [{ "_id": { $ne: Meteor.userId() } },{ "status.online": true }]},{
 	transform: function(doc) {
 	doc.unread_messages = ChatMessage.find({from:doc._id,to:Meteor.userId(),is_seen:0})
 	return doc
@@ -154,53 +154,17 @@ Template.userprofile.events({
 	$('#user_interest').attr('contenteditable','false')
   },
    'click .follow': function () {
-        var q_id = this._id;
-        found = FollowList.findOne({following_ids:q_id, u_id: Meteor.userId(),is_topic:0})
-	found_u_id = ""
-	following = []
-        	if (found == null ){
-		        found_up = FollowList.findOne({u_id: Meteor.userId(),is_topic:0})
-		        if (found_up != null ){
-			        found_u_id = found_up._id;
-		        }else{
-				FollowList.insert({following_ids:[], u_id: Meteor.userId(),is_topic:0}, function(err,docsInserted){
-				found_u_id = docsInserted.toString()
-		      	  })
-			}
-			found_up = FollowList.findOne({u_id: Meteor.userId(),is_topic:0})
-			if (found_up == null){
-				following = [q_id]
-			}else{
-				following = found_up.following_ids
-				
-				following.push(q_id)
-			}
-			console.log("pushed")
-			
-		        FollowList.update(found_up._id,{$set:{following_ids: following}})
-			already_nof = Notification.findOne({u_id:q_id,follower_id:Meteor.userId(),is_topic:0,is_unfollowed:1,is_userfollow:1,is_f_notify:1})
-			if (already_nof == null){
-        		Notification.insert({u_id:q_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_follow",is_topic:0,created_at:new Date(),is_userfollow:1,is_f_notify:1})
-			}else{
-				Notification.update(already_nof._id,{$set:{is_unfollowed:0}})
-			}
-	 		div_id = '#follow' + q_id;
-		         $(div_id).html("Unfollow");
-			return true;
-	        }else{
-        		found_u_id = found._id;
-			var following = found.following_ids
-			console.log("popped")
-			following.pop(q_id)
-		        FollowList.update(found._id,{$set:{following_ids: following}})
-			notify_del = Notification.findOne({u_id:q_id,follower_id:Meteor.userId(),is_userfollow:1,is_f_notify:1})
-			if (notify_del != null){
-				Notification.update(notify_del._id,{$set:{is_unfollowed:1}})
-			}
-		        div_id = '#follow' + this._id;
-                	$(div_id).html("Follow");
-	        }
-      //  QuestionsList.update(this._id._str,  {$set:{upvote: 1}});
+	q_id = this._id
+	 Meteor.call("userfollow",this._id, function(error, result) {
+		if (result.unfollow){
+                div_id = '#follow' + q_id;
+                $(div_id).html("Unfollow");
+                }
+		if (result.follow){
+                div_id = '#follow' + q_id;
+                $(div_id).html("Follow");
+                }
+		})
         }
  
 });
@@ -242,13 +206,11 @@ Template[templateName].events({
                         event.preventDefault()
 			var topic = template.find('#modal_newTopic_topic').value			
 			var unique_q_id = topic.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-")	
-				TopicList.insert({title:topic
-				,u_id:Meteor.userId(),created_at:new Date(),unique_q_id:unique_q_id
-				}, function(err,docsInserted){
-				var id = docsInserted;
+				hash ={'topic':topic,'unique_q_id':unique_q_id}	
+				Meteor.call("topic_create",hash, function(error,result){
 				Modal.hide()
-				Router.go('/topic/'+unique_q_id)
-		        });
+                                Router.go('/topic/'+unique_q_id)
+				})
 			}	
 
 })
@@ -257,53 +219,17 @@ Template[templateName].events({
 Template.topic.events({
 	'click .follow': function () {
         var q_id = this._id;
-        found = FollowList.findOne({following_topic_ids:q_id, u_id: Meteor.userId(),is_topic:1})
-        found_u_id = ""
-	following = []
-        if (found == null ){
-	        found_up = FollowList.findOne({u_id: Meteor.userId(),is_topic:1})
-        		if (found_up != null ){
-		        found_u_id = found_up._id;
-		        }else{
-		        FollowList.insert({following_topic_ids:[], u_id: Meteor.userId(),is_topic:1}, function(err,docsInserted){
-                	found_u_id = docsInserted.toString()
-		        })
-		        }
-			found_up = FollowList.findOne({u_id: Meteor.userId(),is_topic:1})
-			        if (found_up == null){
-		                var following = [q_id]
-			        }else{
-					if(typeof found_up.following_topic_ids == 'undefined'){
-					following = []
-					}else{
-				         following = found_up.following_topic_ids
-					}
-			        following.push(q_id)
-			        }
-        FollowList.update(found_up._id,{$set:{following_topic_ids: following}})
-	user_id = TopicList.findOne({_id:q_id}).u_id
-	already_nof = Notification.findOne({u_id:user_id,follower_id:Meteor.userId(),is_topic:1,is_unfollowed:1,is_f_notify:1})
-		if (already_nof == null){
-		Notification.insert({u_id:user_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"topic",notify_id:q_id,created_at:new Date(),is_f_notify:1})
-		}else{
-		Notification.update(already_nof._id,{$set:{is_unfollowed:0}})
-		}
-         div_id = '#follow' + q_id;
-         $(div_id).html("Unfollow");
-        }else{
-        found_u_id = found._id;
-        var following = found.following_topic_ids
-        following.pop(q_id)
-        FollowList.update(found._id,{$set:{following_topic_ids: following}})
-	user_id = TopicList.findOne({_id:q_id}).u_id
-	 notify_del = Notification.findOne({u_id:user_id,follower_id:Meteor.userId(),is_topic:1,is_f_notify:1})
-                        if (notify_del != null){
-                                Notification.update(notify_del._id,{$set:{is_unfollowed:1}})
-                        }
-        div_id = '#follow' + this._id;
+	Meteor.call("topicfollow",q_id, function (error, result) {
+                if (result.unfollow){
+                div_id = '#follow' + q_id;
+                $(div_id).html("Unfollow");
+                }
+                if (result.follow){
+                div_id = '#follow' + q_id;
                 $(div_id).html("Follow");
-        }
-      //  QuestionsList.update(this._id._str,  {$set:{upvote: 1}});
+                }
+                })
+
         },
 	'click .post_topic': function () {
 		var q_id = this._id;
@@ -315,8 +241,9 @@ Template.topic.events({
 			alert('Please put some words and post');
 			return
 		}
-		AnswersList.insert({text:post_topic,topic_id:q_id,created_at:new Date(),u_id:Meteor.userId()},function(err,docsInserted){
-		$('#summernote').summernote('reset');
+		hash = {topic_id:q_id,text:post_topic}
+		Meteor.call("create_topic_post",hash, function (error, result) {
+			$('#summernote').summernote('reset');
 		})
 	}
 });
@@ -669,6 +596,12 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
     	var question = event.target.search.value;
 	arr = ["what"," why"," where", "when" ,"how" ,"who"]
 	var unique_q_id = question.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-")
+	hash = {question:question,unique_q_id:unique_q_id}
+	Meteor.call("question_ask",hash, function(error,response){
+		$('#question_input').val("");
+        Router.go('/question/'+unique_q_id)
+	})
+	/*
     	QuestionsList.insert({
         	text: question,
 		unique_q_id: question.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-"),
@@ -676,9 +609,7 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 		answer_ids: [],
 		created_at: new Date(),
     }, function(err,docsInserted){
-	});
-	$('#question_input').val("");
-	Router.go('/question/'+unique_q_id)
+	});*/
     }
 });
 
@@ -697,39 +628,22 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 	var q_date = this.created_at
 	var q_unique = this.unique_q_id
 	var q_user = this.user
-	if (this.answers_ids != null){
-	var q_answer_ids = this.answers_ids;
-	}else{
-	var q_answer_ids = [];
-	}
-	found = AnswersList.findOne({u_id:Meteor.userId(), question_id: this._id})
-	if (found==null){
-        AnswersList.insert({
-                ans: answer,
-		question_id: this._id,
-		u_id: Meteor.userId(),
-		created_at: new Date(),
-		comment_ids: [],
-    },  function(err,docsInserted){
-	q_answer_ids.push(docsInserted)
-	QuestionsList.update({_id: q_id}, {text: q_text, answers_ids: q_answer_ids, created_at: q_date, unique_q_id:q_unique, user:q_user})
-	Notification.insert({u_id:q_user,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"answer",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
-	});
-	 div_id = '#answer' + this._id;
-        $(div_id).hide();
-        div_id = '#anser' + this._id;
-        $(div_id).hide();
-
-	}else{
-		var created_at = found.created_at;
-		var comment_ids = found.comment_ids;
-		AnswersList.update({_id:found._id},{ans: answer, question_id: this._id, u_id: Meteor.userId(), created_at: created_at, comment_ids:comment_ids})
-		div_id = '#anser' + this._id;
-        	$(div_id).hide();
-		div_id = '#answer_edit' + this._id;
-		$(div_id).addClass('answer_edit');
+	var thiselement = jQuery.extend({}, this);
+	Meteor.call("add_answer",q_id,answer, function (error, result){
+		if (result.edit){
+		div_id = '#anser' + q_id;
+                $(div_id).hide();
+                div_id = '#answer_edit' + q_id;
+                $(div_id).addClass('answer_edit');
                 $(div_id).removeClass('answer_edit_hide');
-	}
+		}
+		if (result.add){
+		div_id = '#answer' + q_id;
+	        $(div_id).hide();
+        	div_id = '#anser' + q_id;
+	        $(div_id).hide();
+		}
+	})
 },
 	'click .edit_content_answer': function(event){
 	  event.preventDefault();
@@ -739,13 +653,14 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
         var answer = $(div_id).summernote('code');
         //$(div_id).summernote('destroy');
 //      var answer = $(div_id).html().replace(/contenteditable=\"true\"/g,'')
-                AnswersList.update(this._id,{$set:{"ans": answer}})
-                div_id = '#anser' + this._id;
+		q_id = this._id;
+		Meteor.call("edit_answer",q_id,answer,function(error,result){
+		 div_id = '#anser' + q_id;
                 $(div_id).hide();
-                div_id = '#answer_edit' + this._id;
+                div_id = '#answer_edit' + q_id;
                 $(div_id).addClass('answer_edit');
                 $(div_id).removeClass('answer_edit_hide');
-
+		})
 	}
 });
 
@@ -754,32 +669,7 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
         event.preventDefault();
         var div_id = '#comment_' + this._id;
         var comment = UniHTML.purify($(div_id).val());
-	
-//       var answer = $(div_id).html()
-//      alert(answer);
-        var q_id = this._id;
-        var q_text = this.ans;
-        var q_date = this.created_at
-	var q_uid = this.u_id
-	var q_qid = this.question_id
-        if (this.comment_ids != null){
-        var q_comment_ids = this.comment_ids;
-        }else{
-        var q_comment_ids = [];
-        }
-        CommentsList.insert({
-                comment: comment,
-                answer_id: this._id,
-                u_id: Meteor.userId(),
-                created_at: new Date(),
-		commentreply_ids: [],
-    },  function(err,docsInserted){
-        q_comment_ids.push(docsInserted)
-        AnswersList.update({_id: q_id}, {ans: q_text, comment_ids: q_comment_ids, created_at: q_date, u_id:q_uid, question_id:q_qid })
-	Notification.insert({u_id:q_uid,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"comment",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
-        });
-        //div_id = '#comment_ans' + this._id;
-        //$(div_id).hide();
+	Meteor.call("comment_insert",this._id,comment)	
         div_id = '#comment' + this._id;
         $(div_id).hide();
     }
@@ -1971,12 +1861,207 @@ ChatMessage.update(unread_messages[i]._id,{$set:{"is_seen": 1}})
 }
 }
 },
-
-
 upload_profile_pic: function (fileObj_id) {
                 Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.image_id": fileObj_id}})
 
-}
+},
+userfollow: function(q_id) {
+        found = FollowList.findOne({following_ids:q_id, u_id: Meteor.userId(),is_topic:0})
+        found_u_id = ""
+        following = []
+                if (found == null ){
+                        found_up = FollowList.findOne({u_id: Meteor.userId(),is_topic:0})
+                        if (found_up != null ){
+                                found_u_id = found_up._id;
+                        }else{
+                                FollowList.insert({following_ids:[], u_id: Meteor.userId(),is_topic:0}, function(err,docsInserted){
+                                found_u_id = docsInserted.toString()
+                          })
+                        }
+                        found_up = FollowList.findOne({u_id: Meteor.userId(),is_topic:0})
+                        if (found_up == null){
+                                following = [q_id]
+                        }else{
+                                following = found_up.following_ids
+
+                                following.push(q_id)
+                        }
+
+                        FollowList.update(found_up._id,{$set:{following_ids: following}})
+                        already_nof = Notification.findOne({u_id:q_id,follower_id:Meteor.userId(),is_topic:0,is_unfollowed:1,is_userfollow:1,is_f_notify:1})
+                        if (already_nof == null){
+                        Notification.insert({u_id:q_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_follow",is_topic:0,created_at:new Date(),is_userfollow:1,is_f_notify:1})
+                        }else{
+                                Notification.update(already_nof._id,{$set:{is_unfollowed:0}})
+                        }
+			hash ={'unfollow':true,'follow':false}
+                        return hash;
+                }else{
+                        found_u_id = found._id;
+                        var following = found.following_ids
+			 following.pop(q_id)
+                        FollowList.update(found._id,{$set:{following_ids: following}})
+                        notify_del = Notification.findOne({u_id:q_id,follower_id:Meteor.userId(),is_userfollow:1,is_f_notify:1})
+                        if (notify_del != null){
+                                Notification.update(notify_del._id,{$set:{is_unfollowed:1}})
+                        }
+			hash ={'follow':true,'unfollow':false}
+                        return hash;
+                }
 
 
+},
+	topic_create: function(hash){
+			 TopicList.insert({title:hash.topic
+                                ,u_id:Meteor.userId(),created_at:new Date(),unique_q_id:hash.unique_q_id
+                                }, function(err,docsInserted){
+                                var id = docsInserted;
+                        });
+
+		},
+
+	topicfollow: function(q_id) {
+	 found = FollowList.findOne({following_topic_ids:q_id, u_id: Meteor.userId(),is_topic:1})
+   	found_u_id = ""
+        following = []
+        if (found == null ){
+                found_up = FollowList.findOne({u_id: Meteor.userId(),is_topic:1})
+                        if (found_up != null ){
+                        found_u_id = found_up._id;
+                        }else{
+                        FollowList.insert({following_topic_ids:[], u_id: Meteor.userId(),is_topic:1}, function(err,docsInserted){
+                        found_u_id = docsInserted.toString()
+                        })
+                        }
+                        found_up = FollowList.findOne({u_id: Meteor.userId(),is_topic:1})
+                                if (found_up == null){
+                                var following = [q_id]
+                                }else{
+                                        if(typeof found_up.following_topic_ids == 'undefined'){
+                                        following = []
+                                        }else{
+                                         following = found_up.following_topic_ids
+                                        }
+                                following.push(q_id)
+                                }
+        FollowList.update(found_up._id,{$set:{following_topic_ids: following}})
+        user_id = TopicList.findOne({_id:q_id}).u_id
+        already_nof = Notification.findOne({u_id:user_id,follower_id:Meteor.userId(),is_topic:1,is_unfollowed:1,is_f_notify:1})
+                if (already_nof == null){
+                Notification.insert({u_id:user_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"topic",notify_id:q_id,created_at:new Date(),is_f_notify:1})
+                }else{
+                Notification.update(already_nof._id,{$set:{is_unfollowed:0}})
+                }
+		hash ={'unfollow':true,'follow':false}
+                        return hash;
+         //div_id = '#follow' + q_id;
+         //$(div_id).html("Unfollow");
+	 }else{
+        found_u_id = found._id;
+        var following = found.following_topic_ids
+        following.pop(q_id)
+        FollowList.update(found._id,{$set:{following_topic_ids: following}})
+        user_id = TopicList.findOne({_id:q_id}).u_id
+         notify_del = Notification.findOne({u_id:user_id,follower_id:Meteor.userId(),is_topic:1,is_f_notify:1})
+                        if (notify_del != null){
+                                Notification.update(notify_del._id,{$set:{is_unfollowed:1}})
+                        }
+			hash ={'follow':true,'unfollow':false}
+                        return hash;
+        }
+
+
+	},
+
+	create_topic_post: function(hash) {
+	AnswersList.insert({text:hash.text,topic_id:hash.topic_id,created_at:new Date(),u_id:Meteor.userId()})	
+	},
+	
+	question_ask: function(hash) {
+	 QuestionsList.insert({
+                text: hash.question,
+                unique_q_id: hash.question.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-"),
+                user: Meteor.userId(),
+                answer_ids: [],
+                created_at: new Date()})
+
+	},
+	
+	add_answer: function(q_id, answer) {
+	thiselement = QuestionsList.findOne({_id:q_id})
+	var q_id = thiselement._id;
+        var q_text = thiselement.text;
+        var q_date = thiselement.created_at
+        var q_unique = thiselement.unique_q_id
+        var q_user = thiselement.user
+	 if (thiselement.answers_ids != null){
+        var q_answer_ids = thiselement.answers_ids;
+        }else{
+        var q_answer_ids = [];
+        }
+        found = AnswersList.findOne({u_id:Meteor.userId(), question_id: thiselement._id})
+        if (found==null){
+        AnswersList.insert({
+                ans: answer,
+                question_id: thiselement._id,
+                u_id: Meteor.userId(),
+                created_at: new Date(),
+                comment_ids: [],
+    },  function(err,docsInserted){
+        q_answer_ids.push(docsInserted)
+        QuestionsList.update({_id: q_id}, {text: q_text, answers_ids: q_answer_ids, created_at: q_date, unique_q_id:q_unique, user:q_user})
+        Notification.insert({u_id:q_user,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"answer",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
+        });
+	hash = {edit:false,add:true}
+	return hash
+	/*         div_id = '#answer' + thiselement._id;
+        $(div_id).hide();
+        div_id = '#anser' + thiselement._id;
+        $(div_id).hide();
+*/
+        }else{
+                var created_at = found.created_at;
+                var comment_ids = found.comment_ids;
+                AnswersList.update({_id:found._id},{ans: answer, question_id: thiselement._id, u_id: Meteor.userId(), created_at: created_at, comment_ids:comment_ids})
+		hash = {edit:true,add:false}
+		return hash
+                /*div_id = '#anser' + thiselement._id;
+                $(div_id).hide();
+                div_id = '#answer_edit' + thiselement._id;
+                $(div_id).addClass('answer_edit');
+                $(div_id).removeClass('answer_edit_hide');*/
+        }
+
+	
+	},
+
+	edit_answer: function(q_id,answer) {
+		AnswersList.update(q_id,{$set:{"ans": answer}})
+	},
+	comment_insert: function(q_id,comment) {
+	thiselement = AnswersList.findOne({_id:q_id})	
+	var q_id = thiselement._id;
+        var q_text = thiselement.ans;
+        var q_date = thiselement.created_at
+        var q_uid = thiselement.u_id
+        var q_qid = thiselement.question_id
+        if (this.comment_ids != null){
+        var q_comment_ids = thiselement.comment_ids;
+        }else{
+        var q_comment_ids = [];
+        }
+        CommentsList.insert({
+                comment: comment,
+                answer_id: thiselement._id,
+                u_id: Meteor.userId(),
+                created_at: new Date(),
+                commentreply_ids: [],
+    },  function(err,docsInserted){
+        q_comment_ids.push(docsInserted)
+        AnswersList.update({_id: q_id}, {ans: q_text, comment_ids: q_comment_ids, created_at: q_date, u_id:q_uid, question_id:q_qid })
+        Notification.insert({u_id:q_uid,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"comment",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
+        });
+
+
+	}
 });
