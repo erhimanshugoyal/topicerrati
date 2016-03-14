@@ -331,7 +331,7 @@
 				   {{#if messages.count}}
 				        {{#each messages}}
 					    <a class="content" href="#">
-						       <div class="notification-item"><img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.notify_user_image.url}}" />
+						       <div class="notification-item notification-message"><img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.notify_user_image.url}}" />
 					        <p class="item-heading">{{this.notify_user.username}}<br>
 						{{this.message}}
 						<br> {{formatDate created_at}}</p>
@@ -360,7 +360,7 @@
                                             </div>
                                             <li class="divider"></li>
                                    <div class="notifications-wrapper">
-                                   {{#if votes.count}}
+                            <!--       {{#if votes.count}}
                                         {{#each votes}}
                                             <a class="content" href="#">
                                                        <div class="notification-item"><img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.notify_user_image.url}}" />
@@ -376,31 +376,39 @@
                                 	                <br> {{formatDate created_at}}</p>
 							{{/if}}
 						{{/if}}
-<!--        <p class="item-info">Marketing 101, Video Assignment</p>-->
                                                       </div>
                                             </a>
                                         {{/each}}
-                                   {{/if}}
+                                   {{/if}} -->
+						
 				   {{#if notification_bell.count}}
                                         {{#each notification_bell}}
                                             <a class="content" href="#">
                                                        <div class="notification-item"><img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.notify_user_image.url}}" />
-						{{#if this.is_topic}}
-						{{else}}
-                                                {{#if this.is_answer}}
+                                                {{#if isAnswer is_type}}
                                                 <p class="item-heading">{{this.notify_user.username}} answered to your question
                                                 <br> {{formatDate created_at}}</p>
-                                                {{else }}
-                                                        {{#if  this.is_comment}}
-                                                        <p class="item-heading">{{this.notify_user.username}} commented to your answer
-                                                        <br> {{formatDate created_at}}</p>
-                                                        {{/if}}
-							{{#if  this.is_reply}}
-                                                        <p class="item-heading">{{this.notify_user.username}} replied to your comment
-                                                        <br> {{formatDate created_at}}</p>
-                                                        {{/if}}
+                                                {{/if }}
+                                                {{#if  isComment is_type}}
+                                                <p class="item-heading">{{this.notify_user.username}} commented to your answer
+                                                <br> {{formatDate created_at}}</p>
                                                 {{/if}}
-						{{/if}}
+						{{#if  isReply is_type}}
+                                                <p class="item-heading">{{this.notify_user.username}} replied to your comment
+                                                <br> {{formatDate created_at}}</p>
+                                                {{/if}}
+						{{#if isQuestionUpvote is_type}}
+                                                <p class="item-heading">{{this.notify_user.username}} upvoted a question asked by you
+                                                <br> {{formatDate created_at}}</p>
+                                                {{/if}}
+                                                {{#if  isAnswerUpvote is_type}}
+                                                <p class="item-heading">{{this.notify_user.username}} upvoted an answer given by you
+                                                <br> {{formatDate created_at}}</p>
+                                                {{/if}}
+						{{#if  isCommentUpvote is_type}}
+                                                <p class="item-heading">{{this.notify_user.username}} upvoted a comment  by you
+                                                <br> {{formatDate created_at}}</p>
+                                                {{/if}}
 <!--        <p class="item-info">Marketing 101, Video Assignment</p>-->
                                                       </div>
                                             </a>
@@ -760,7 +768,7 @@
 	                </div>
 
 			<div style="float:right;">
-                        <button class="answer_edit {{_id}} edit_answer" id="answer_edit{{_id}}" style="background-color:beige;">Edit Answer</button>
+                        <button class="answer_edit {{_id}} edit_answer" id="answer_edit{{_id}}" style="background-color:beige;"><i class="fa fa-pencil-square-o"></i></button>
                         </div>	
 		{{/if}}
 		{{/if}}
@@ -812,7 +820,7 @@
 			<div style="margin-top:5%;display:none;" id="comment{{formatId _id}}">
                         <form>
 				<textarea id="comment_{{formatId _id}}" style="overflow:auto;width:75%;margin-left:5%;" name="comment_{{formatId_id}}"></textarea>
-                                <input type="submit" style="height:10%;width:20%;" name="Submit" value="Add Comment">
+                                <input type="submit" style="height:10%;width:20%;" class="add_comment" name="Submit" value="Add Comment">
                         </form>
                         </div>
 			{{#if this.commentsmulti}}
@@ -874,7 +882,7 @@
                         <div style="margin-top:5%;display:none;" id="commentreply{{formatId _id}}">
                         <form>
                                 <textarea id="commentreply_{{formatId _id}}" style="overflow:auto;width:75%;margin-left:5%;" name="commentreply_{{formatId_id}}"></textarea>
-                                <input type="submit" style="height:10%;width:20%;" name="Submit" value="Reply">
+                                <input type="submit" style="height:10%;width:20%;" class="add_reply" name="Submit" value="Reply">
                         </form>
 			</div>
 </template>

@@ -665,8 +665,9 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 });
 
  Template.answer_voting.events({
-    'submit form': function(event){
+    'click .add_comment': function(event){
         event.preventDefault();
+	console.log("cppment onsertion called")
         var div_id = '#comment_' + this._id;
         var comment = UniHTML.purify($(div_id).val());
 	Meteor.call("comment_insert",this._id,comment)	
@@ -676,33 +677,12 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 });
 
  Template.comment_reply.events({
-    'submit form': function(event){
+    'click .add_reply': function(event){
         event.preventDefault();
+	console.log("reply onsertion called")
 	var div_id = '#commentreply_' + this._id;
         var commentreply = UniHTML.purify($(div_id).val());
-	
-//       var answer = $(div_id).html()
-//      alert(answer);
-        var q_id = this._id;
-        var q_answer_id = this.answer_id;
-        var q_date = this.created_at
-        var q_uid = this.u_id
-	var q_comment = this.comment
-        if (this.commentreply_ids != null){
-        var q_commentreply_ids = this.commentreply_ids;
-        }else{
-        var q_commentreply_ids = [];
-        }
-        ReplyComment.insert({
-                reply: commentreply,
-                comment_id: this._id,
-                u_id: Meteor.userId(),
-                created_at: new Date(),
-    },  function(err,docsInserted){
-        q_commentreply_ids.push(docsInserted)
-        CommentsList.update({_id: q_id}, {comment: q_comment, commentreply_ids: q_commentreply_ids, created_at: q_date, u_id:q_uid, answer_id:q_answer_id })
-	Notification.insert({u_id:q_uid,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"reply",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
-        });
+	Meteor.call("reply_insert",this._id,commentreply)	
         div_id = '#commentreply_ans' + this._id;
 	
         $(div_id).hide();
@@ -752,6 +732,7 @@ Template.topic.rendered = function(){
                 });
                 });
 }
+/* DEprectae quill editor
 Template.quill_editor.onRendered(function () {
   var fullEditor;
 	id_q_complete = QuestionsList.findOne({_id:Template.parentData(0)._id})
@@ -807,7 +788,7 @@ basicEditor.on('text-change', function(delta, source) {
 });
   return fullEditor;
 });
-
+*/
 
  Template.home.helpers({
   } );
@@ -862,9 +843,12 @@ Template.index.profilepic_dd = function() {
 		$('.fa-user-plus').siblings('.badge2').hide();
         },
 	'click .item-heading': function() {
-        	alert(this._id)
-		Notification.update(this._id,{$set:{is_seen:1}})
-	}
+		Meteor.call("remove_notification",this._id)
+	},
+	'click .notification-message':function() {
+                Meteor.call("remove_message_notification",this._id)
+        }
+	
 
   });
   
@@ -892,7 +876,9 @@ Template.index.profilepic_dd = function() {
 )
 	},
    notification_bell: function() {
-        Notification.find({u_id:Meteor.userId(),is_seen:0,is_f_notify:0}).observe({
+        Notification.find({u_id:Meteor.userId(),is_seen:0,is_f_notify:0,"is_type": {
+        $in: ["comment","reply","answer","user_answer_upvote","user_comment_upvote","user_question_upvote"]
+    }}).observe({
   added: function(id) {
         if(id.is_topic == 0){
                 $('.fa-envelope').siblings('.badge2').show();
@@ -942,7 +928,25 @@ Template.index.profilepic_dd = function() {
                 }}
 
 )
-   }
+   },
+  isComment: function (name) {
+    return name === "comment"
+  },
+  isReply: function (name) {
+    return name === "reply"
+  },
+  isAnswer: function (name) {
+    return name === "answer"
+  },
+  isAnswerUpvote: function (name) {
+    return name === "user_answer_upvote"
+  },
+  isCommentUpvote: function (name) {
+    return name === "user_comment_upvote"
+  },
+  isQuestionUpvote: function (name) {
+    return name === "user_question_upvote"
+  }
   }) 
 
 
@@ -1270,143 +1274,70 @@ Template.chat.events({
   Template.answer_voting.events({
         'click .upvote_ans': function () {
         var q_id = this._id;
-        found = Votes.findOne({answer_id: q_id, u_id: Meteor.userId(), upvote:1})
-        if (found == null ){
-        found_up = Votes.findOne({answer_id: q_id, u_id: Meteor.userId()})
-        if (found_up != null ){
-        found_u_id = found_up._id;
-        Votes.remove({_id: found_u_id})
-        }
-        Votes.insert({
-                createdAt: new Date(),
-                upvote: 1,
-                answer_id: q_id,
-                u_id: Meteor.userId(),
-		is_seen:0,
-		user_id:this.u_id,
-	    },function(err,docsInserted){
-		Notification.insert({u_id:this.u_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_answer_upvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:1})	
-	});
-         div_id = '#upvote_ans' + q_id;
-         $(div_id).html("Upvoted");
-        div_id = '#downvote_ans' + this._id;
-        $(div_id).html("Downvote");
-        }else{
-        found_u_id = found._id;
-        Votes.remove({_id: found_u_id})
-        div_id = '#upvote_ans' + this._id;
-                $(div_id).html("Upvote");
-        div_id = '#downvote_ans' + this._id;
-        $(div_id).html("Downvote");
-        }
-      //  QuestionsList.update(this._id._str,  {$set:{upvote: 1}});
+	Meteor.call("upvote_answer", q_id, function (error,result) {
+		if (hash.upvoted) {
+			div_id = '#upvote_ans' + q_id;
+		         $(div_id).html("Upvoted");
+		        div_id = '#downvote_ans' + q_id;
+		        $(div_id).html("Downvote");
+		}else{
+			div_id = '#upvote_ans' + q_id;
+	                $(div_id).html("Upvote");
+        		div_id = '#downvote_ans' + q_id;
+		        $(div_id).html("Downvote");
+		}
+
+	})
         },
 	   'click .downvoting_ans': function () {
         var q_id = this._id;
-        found_vote = Votes.findOne({answer_id: q_id, u_id: Meteor.userId(),downvote: 1})
-        if (found_vote == null ){
-           found_down = Votes.findOne({answer_id: q_id, u_id: Meteor.userId()})
-          if (found_down != null ){
-           found_u_id = found_down._id;
-           Votes.remove({_id: found_u_id})
-        }
-           Votes.insert({
-                createdAt: new Date(),
-                downvote: 1,
-                answer_id: this._id,
-                u_id: Meteor.userId(),
-		is_seen:0,
-		user_id:this.u_id,
-    },function(err,docsInserted){
-                Notification.insert({u_id:this.u_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_answer_downvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:1})                
-        });
-         div_id = '#downvote_ans' + q_id;
+	Meteor.call("downvote_answer",q_id, function (error, result) {
+		if (hash.downvoted) {
+		div_id = '#downvote_ans' + q_id;
                 $(div_id).html("Downvoted");
-	div_id = '#upvote_ans' + q_id;
+	        div_id = '#upvote_ans' + q_id;
                 $(div_id).html("Upvote");
-        }else{
-        found_u_id = found_vote._id;
-        Votes.remove({_id: found_u_id})
-        div_id = '#downvote_ans' + this._id;
-        $(div_id).html("Downvote");
-        div_id = '#upvote_ans' + this._id;
-        $(div_id).html("Upvote");
-        }
-//      div_id = '#quest' + this._id;
-//                $(div_id).hide();
-        //QuestionsList.update(this._id._str,  {$set:{downvote: 1}});
+		}else{
+		div_id = '#downvote_ans' + this._id;
+	        $(div_id).html("Downvote");
+        	div_id = '#upvote_ans' + this._id;
+	        $(div_id).html("Upvote");
+		}
+	})
         },
 	//Comment Voting System
 		'click .upvote_comment': function () {
         var q_id = this._id;
-	found = Votes.findOne({comment_id: q_id, u_id: Meteor.userId(), upvote:1})
-        if (found == null ){
-        found_up = Votes.findOne({comment_id: q_id, u_id: Meteor.userId()})
-        if (found_up != null ){
-        found_u_id = found_up._id;
-        Votes.remove({_id: found_u_id})
-        }
-        Votes.insert({
-                createdAt: new Date(),
-                upvote: 1,
-                comment_id: q_id,
-                u_id: Meteor.userId(),
-		is_seen:0,
-		user_id:this.u_id,
-    },function(err,docsInserted){
-                Notification.insert({u_id:this.u_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_comment_upvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:1})                
-        });
-         div_id = '#upvote_comment' + q_id;
-         $(div_id).html("Upvoted");
-        div_id = '#downvote_comment' + this._id;
-        $(div_id).html("Downvote");
-        }else{
-        found_u_id = found._id;
-        Votes.remove({_id: found_u_id})
-        div_id = '#upvote_comment' + this._id;
-                $(div_id).html("Upvote");
-        div_id = '#downvote_comment' + this._id;
-        $(div_id).html("Downvote");
-        }
-	  //  QuestionsList.update(this._id._str,  {$set:{upvote: 1}});
+	Meteor.call("upvote_comment",q_id, function(error, result){
+		if (result.upvoted){
+			div_id = '#upvote_comment' + q_id;
+		         $(div_id).html("Upvoted");
+		        div_id = '#downvote_comment' + q_id;
+		        $(div_id).html("Downvote");
+		}else{
+			div_id = '#upvote_comment' + q_id;
+	                $(div_id).html("Upvote");
+        		div_id = '#downvote_comment' + q_id;
+		        $(div_id).html("Downvote");
+		}
+	})
         },
            'click .downvoting_comment': function () {
         var q_id = this._id;
-        found_vote = Votes.findOne({comment_id: q_id, u_id: Meteor.userId(),downvote: 1})
-        if (found_vote == null ){
-           found_down = Votes.findOne({comment_id: q_id, u_id: Meteor.userId()})
-          if (found_down != null ){
-           found_u_id = found_down._id;
-           Votes.remove({_id: found_u_id})
-        }
-           Votes.insert({
-                createdAt: new Date(),
-                downvote: 1,
-                comment_id: this._id,
-                u_id: Meteor.userId(),
-		is_seen:0,
-		user_id:this._id,
-    },function(err,docsInserted){
-                Notification.insert({u_id:this.u_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_comment_downvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:1})                
-        });
-         div_id = '#downvote_comment' + q_id;
+	Meteor.call("downvote_comment",q_id,function (error,result){
+		if (result.downvoted){
+		div_id = '#downvote_comment' + q_id;
                 $(div_id).html("Downvoted");
-        div_id = '#upvote_comment' + q_id;
+	        div_id = '#upvote_comment' + q_id;
                 $(div_id).html("Upvote");
-        }else{
-        found_u_id = found_vote._id;
-        Votes.remove({_id: found_u_id})
-        div_id = '#downvote_comment' + this._id;
-        $(div_id).html("Downvote");
-        div_id = '#upvote_comment' + this._id;
-        $(div_id).html("Upvote");
+		}else{
+		div_id = '#downvote_comment' + this._id;
+	        $(div_id).html("Downvote");
+        	div_id = '#upvote_comment' + this._id;
+	        $(div_id).html("Upvote");
+		}
+	})
         }
-//      div_id = '#quest' + this._id;
-//                $(div_id).hide();
-        //QuestionsList.update(this._id._str,  {$set:{downvote: 1}});
-        }
-
-
 });
 
 
@@ -1414,103 +1345,37 @@ Template.chat.events({
   Template.everyq.events({
 	'click .upvote': function () {
 	var q_id = this._id;
-	found = Votes.findOne({question_id: q_id, u_id: Meteor.userId(), upvote:1})
-	if (found == null ){
-	found_up = Votes.findOne({question_id: q_id, u_id: Meteor.userId()})
-	if (found_up != null ){
-	found_u_id = found_up._id;
-        Votes.remove({_id: found_u_id})
-	}
-	console.log(this)
-	Votes.insert({
-		createdAt: new Date(),
-                upvote: 1,
-		question_id: q_id,
-		u_id: Meteor.userId(),
-		is_seen:0,
-		user_id :this.user,
-    },function(err,docsInserted){
-                Notification.insert({u_id:this.user,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_question_upvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:1})                
-        });
-	 div_id = '#upvote' + q_id;
-         $(div_id).html("Upvoted");
-	div_id = '#downvote' + this._id;
-        $(div_id).html("Downvote");
-	
-	}else{
-	found_u_id = found._id;
-	Votes.remove({_id: found_u_id})
-	div_id = '#upvote' + this._id;
-                $(div_id).html("Upvote");	
-	div_id = '#downvote' + this._id;
-        $(div_id).html("Downvote");
-	}
-      //  QuestionsList.update(this._id._str,  {$set:{upvote: 1}});
+	Meteor.call("upvote_question",q_id, function(error,result){
+		if (result.upvoted) {
+			 div_id = '#upvote' + q_id;
+		         $(div_id).html("Upvoted");
+		        div_id = '#downvote' + q_id;
+		        $(div_id).html("Downvote");
+		}else{
+			div_id = '#upvote' + q_id;
+	                $(div_id).html("Upvote");
+        		div_id = '#downvote' + q_id;
+		        $(div_id).html("Downvote");
+		}
+
+	})
 	},
 	    'click .downvoting': function () {
 	var q_id = this._id;
-	found_vote = Votes.findOne({question_id: q_id, u_id: Meteor.userId(),downvote: 1})
-        if (found_vote == null ){
-	   found_down = Votes.findOne({question_id: q_id, u_id: Meteor.userId()})
-	  if (found_down != null ){
-           found_u_id = found_down._id;
-           Votes.remove({_id: found_u_id})
-	}
-           Votes.insert({
-                createdAt: new Date(),
-                downvote: 1,
-                question_id: this._id,
-                u_id: Meteor.userId(),
-		is_seen:0,
-		user_id : this.user,
-    },function(err,docsInserted){
-                Notification.insert({u_id:this.user,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_question_downvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:1})                
-        });
-         div_id = '#downvote' + q_id;
-                $(div_id).html("Downvoted");
-        }else{
-        found_u_id = found_vote._id;
-	Votes.remove({_id: found_u_id})
-        div_id = '#downvote' + this._id;
-        $(div_id).html("Downvote");
-        div_id = '#upvote' + this._id;
-        $(div_id).html("Upvote");
-        }
-//      div_id = '#quest' + this._id;
-//                $(div_id).hide();
-        //QuestionsList.update(this._id._str,  {$set:{downvote: 1}});
+	Meteor.call("downvote_question",q_id,function(error,result){
+		if (result.downvoted){
+			div_id = '#downvote' + q_id;
+	                $(div_id).html("Downvoted");
+		}else{
+			div_id = '#downvote' + this._id;
+		        $(div_id).html("Downvote");
+		        div_id = '#upvote' + this._id;
+		        $(div_id).html("Upvote");
+		}
+	})
         }
 	
 });
-/*
-  Template.everyq.events({
-        'click .downvoting': function () {
-	found = Votes.findOne({question_id: q_id, u_id: Meteor.userId()})
-	if (found == null ){
-	alert("asda")
-	   Votes.insert({
-		createdAt: new Date(),
-                downvote: 1,
-                question_id: this._id._str,
-		u_id: Meteor.userId(),
-    });
-	 div_id = '#downvote' + q_id;
-                $(div_id).html("Downvoted");
-	}else{
-	alert("downvote")
-	found_u_id = found._id;
-	Votes.remove({_id: found_u_id})
-	div_id = '#downvote' + this._id;
-	$(div_id).html("Downvote");
-	div_id = '#upvote' + this._id;
-        $(div_id).html("Upvote");
-	}
-//	div_id = '#quest' + this._id;
-//                $(div_id).hide();
-	//QuestionsList.update(this._id._str,  {$set:{downvote: 1}});
-	}   
-});
-*/
   Template.everyq.events({
         'click .answer': function () {
 		div_id = '#anser' + this._id;
@@ -2063,5 +1928,219 @@ userfollow: function(q_id) {
         });
 
 
+	},
+
+	reply_insert: function(q_id,commentreply) {
+	console.log(q_id)
+	thiselement = CommentsList.findOne({_id:q_id})
+	console.log(thiselement)
+	 var q_id = thiselement._id;
+        var q_answer_id = thiselement.answer_id;
+        var q_date = thiselement.created_at
+        var q_uid = thiselement.u_id
+        var q_comment = thiselement.comment
+        if (thiselement.commentreply_ids != null){
+        var q_commentreply_ids = thiselement.commentreply_ids;
+        }else{
+        var q_commentreply_ids = [];
+        }
+        ReplyComment.insert({
+                reply: commentreply,
+                comment_id: q_id,
+                u_id: Meteor.userId(),
+                created_at: new Date(),
+    },  function(err,docsInserted){
+        q_commentreply_ids.push(docsInserted)
+        CommentsList.update({_id: q_id}, {comment: q_comment, commentreply_ids: q_commentreply_ids, created_at: q_date, u_id:q_uid, answer_id:q_answer_id })
+        Notification.insert({u_id:q_uid,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"reply",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
+        });
+
+	},
+
+	upvote_answer: function (q_id) {
+	thiselement = AnswersList.findOne({_id:q_id})	
+	found = Votes.findOne({answer_id: q_id, u_id: Meteor.userId(), upvote:1})
+        if (found == null ){
+        found_up = Votes.findOne({answer_id: q_id, u_id: Meteor.userId()})
+        if (found_up != null ){
+        found_u_id = found_up._id;
+        Votes.remove({_id: found_u_id})
+        }
+        Votes.insert({
+                createdAt: new Date(),
+                upvote: 1,
+                answer_id: q_id,
+                u_id: Meteor.userId(),
+                is_seen:0,
+                user_id:thiselement.u_id,
+            },function(err,docsInserted){
+                Notification.insert({u_id:thiselement.u_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_answer_upvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:0})
+        });
+	hash ={upvoted:true}
+	return hash
+        }else{
+        found_u_id = found._id;
+        Votes.remove({_id: found_u_id})
+	hash ={upvoted:false}
+        return hash
+        }
+	},
+
+	downvote_answer : function (q_id) {
+	thiselement = AnswersList.find({_id:q_id})
+	found_vote = Votes.findOne({answer_id: q_id, u_id: Meteor.userId(),downvote: 1})
+        if (found_vote == null ){
+           found_down = Votes.findOne({answer_id: q_id, u_id: Meteor.userId()})
+          if (found_down != null ){
+           found_u_id = found_down._id;
+           Votes.remove({_id: found_u_id})
+        }
+           Votes.insert({
+                createdAt: new Date(),
+                downvote: 1,
+                answer_id: q_id,
+                u_id: Meteor.userId(),
+                is_seen:0,
+                user_id:thiselement.u_id,
+    },function(err,docsInserted){
+                Notification.insert({u_id:thiselement.u_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_answer_downvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:0})
+        });
+        hash ={downvoted:true}
+        return hash
+
+	}else{
+        found_u_id = found_vote._id;
+        Votes.remove({_id: found_u_id})
+        hash ={downvoted:false}
+        return hash
 	}
+
+
+	},
+
+	upvote_comment: function(q_id) {
+	thiselement = CommentsList.findOne({_id:q_id})
+	found = Votes.findOne({comment_id: q_id, u_id: Meteor.userId(), upvote:1})
+        if (found == null ){
+        found_up = Votes.findOne({comment_id: q_id, u_id: Meteor.userId()})
+        if (found_up != null ){
+        found_u_id = found_up._id;
+        Votes.remove({_id: found_u_id})
+        }
+        Votes.insert({
+                createdAt: new Date(),
+                upvote: 1,
+                comment_id: q_id,
+                u_id: Meteor.userId(),
+                is_seen:0,
+                user_id:thiselement.u_id,
+    },function(err,docsInserted){
+                Notification.insert({u_id:thiselement.u_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_comment_upvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:0})
+        });
+	hash = {upvoted:true}
+	return hash
+        }else{
+        found_u_id = found._id;
+        Votes.remove({_id: found_u_id})
+	hash = {upvoted:false}
+	return hash
+        }
+	},
+	downvote_comment: function(q_id) {
+	thiselement = CommentsList.findOne({_id:q_id})
+	found_vote = Votes.findOne({comment_id: q_id, u_id: Meteor.userId(),downvote: 1})
+        if (found_vote == null ){
+           found_down = Votes.findOne({comment_id: q_id, u_id: Meteor.userId()})
+          if (found_down != null ){
+           found_u_id = found_down._id;
+           Votes.remove({_id: found_u_id})
+        }
+           Votes.insert({
+                createdAt: new Date(),
+                downvote: 1,
+                comment_id: q_id,
+                u_id: Meteor.userId(),
+                is_seen:0,
+                user_id:thiselement._id,
+    },function(err,docsInserted){
+                Notification.insert({u_id:thiselement.u_id,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_comment_downvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:0})
+        });
+	hash = {downvoted:true}
+        return hash
+	}else{
+        found_u_id = found_vote._id;
+        Votes.remove({_id: found_u_id})
+	hash = {downvoted:false}
+	return hash
+        }
+
+	},
+
+	upvote_question: function(q_id) {
+	thiselement =  QuestionsList.findOne({_id:q_id}) 
+        found = Votes.findOne({question_id: q_id, u_id: Meteor.userId(), upvote:1})
+        if (found == null ){
+        found_up = Votes.findOne({question_id: q_id, u_id: Meteor.userId()})
+        if (found_up != null ){
+        found_u_id = found_up._id;
+        Votes.remove({_id: found_u_id})
+        }
+        Votes.insert({
+                createdAt: new Date(),
+                upvote: 1,
+                question_id: q_id,
+                u_id: Meteor.userId(),
+                is_seen:0,
+                user_id :thiselement.user,
+    },function(err,docsInserted){
+                Notification.insert({u_id:thiselement.user,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_question_upvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:0})
+        });
+	hash = {upvoted:true}
+	return hash
+
+        }else{
+        found_u_id = found._id;
+        Votes.remove({_id: found_u_id})
+	hash = {upvoted:false}
+	return hash
+        }
+	},
+
+	downvote_question: function(q_id) {
+	thiselement =  QuestionsList.findOne({_id:q_id})
+	 found_vote = Votes.findOne({question_id: q_id, u_id: Meteor.userId(),downvote: 1})
+        if (found_vote == null ){
+           found_down = Votes.findOne({question_id: q_id, u_id: Meteor.userId()})
+          if (found_down != null ){
+           found_u_id = found_down._id;
+           Votes.remove({_id: found_u_id})
+        }
+           Votes.insert({
+                createdAt: new Date(),
+                downvote: 1,
+                question_id: q_id,
+                u_id: Meteor.userId(),
+                is_seen:0,
+                user_id : thiselement.user,
+    },function(err,docsInserted){
+                Notification.insert({u_id:thiselement.user,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_type:"user_question_downvote",notify_id:docsInserted,is_topic:0,created_at:new Date(),is_f_notify:0})                
+        });
+	hash = {downvoted:true}
+	return hash
+        }else{
+        found_u_id = found_vote._id;
+        Votes.remove({_id: found_u_id})
+	hash = {downvoted:false}
+	return hash
+        }
+	},
+
+	remove_notification: function(q_id){
+		Notification.update(q_id,{$set:{is_seen:1}})
+	},
+	remove_message_notification: function(q_id){
+                ChatMessage.update(q_id,{$set:{is_seen:1}})
+        } 
+	
+
 });
