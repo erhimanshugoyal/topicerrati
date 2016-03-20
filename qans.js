@@ -28,6 +28,10 @@ TopicsIndex = new EasySearch.Index({
 //        tranform: null
 })
 });
+var createCover = function(fileObj, readStream, writeStream) {
+  // Transform the image into a 10x10px thumbnail
+  gm(readStream, fileObj.name()).resize('1050', '250').stream().pipe(writeStream);
+};
 
 var createSmall = function(fileObj, readStream, writeStream) {
   // Transform the image into a 10x10px thumbnail
@@ -39,7 +43,8 @@ var createThumb = function(fileObj, readStream, writeStream) {
 };
 Images = new FS.Collection("images", {
   stores: [
-new FS.Store.FileSystem("thumbs", { transformWrite: createSmall }),
+new FS.Store.FileSystem("cover", { transformWrite: createCover }),
+new FS.Store.FileSystem("thumbs", { transformWrite: createThumb }),
 new FS.Store.FileSystem("small", { transformWrite: createSmall }),
 new FS.Store.FileSystem("images", {path: "~/uploads"})],
 filter: {
@@ -50,6 +55,14 @@ filter: {
 
 });
 if (Meteor.isClient) {
+
+  Meteor.startup(function() {
+  GoogleMaps.load({
+    key: 'AIzaSyD6UVxaabyCDJ4Uol02JaeLa_tvoMLqs_o',
+    libraries: 'places'  // also accepts an array if you need more than one
+  });
+});
+ 
   // counter starts at 0
   Session.setDefault('counter', 0);
 //  Meteor.subscribe("questions");
@@ -86,7 +99,14 @@ Template.chat.usersonline = function(){
   }
 });*/
 }
-
+Template.userprofile.onRendered(function() {
+	$('#user_birthdate').datepicker();
+	this.autorun(function () {
+   		 if (GoogleMaps.loaded()) {
+		      	$("#user_location").geocomplete();
+		    }
+ 		 });
+});
 Template.userprofile.events({
   'change .myFileInput': function(event, template) {
        FS.Utility.eachFile(event, function(file) {
@@ -106,6 +126,40 @@ Template.userprofile.events({
     });
 
   },
+  'change .myCoverInput': function(event, template) {
+       FS.Utility.eachFile(event, function(file) {
+        var fileObj = new FS.File(file);
+//      Meteor.call("upload_profile_pic",fileObj)
+
+        if ((typeof Meteor.users.findOne({_id: Meteor.userId()}).profile !== 'undefined') && (typeof Meteor.users.findOne({_id: Meteor.userId()}).profile.cover_image_id !== 'undefined')){
+                Images.remove({_id: Meteor.users.findOne({_id: Meteor.userId()}).profile.cover_image_id})
+        }
+
+
+        Images.insert(file, function (err, fileObj) {
+        // Inserted new doc with ID fileObj._id, and kicked off the data upload using HTTP
+                Session.set('uploadedcoverId', fileObj._id);
+                Meteor.call("upload_cover_pic",fileObj._id)
+        });
+    });
+
+  },
+     'click .post_profile': function () {
+                var q_id = this._id;
+                //div_id = '#post_in_topic_area' + this._id;
+                //var post_topic = $(div_id).val();
+                div_id = '#textarea'
+                var post_topic = $(div_id).val();
+                if (post_topic == '<p><br></p>'){
+                        alert('Please put some words and post');
+                        return
+                }	
+                hash = {topic_id:q_id,text:post_topic,is_status:1}
+                Meteor.call("create_topic_post",hash, function (error, result) {
+                        $('#textarea').val('');
+                })
+        },
+
   'click #edit_name': function () {
 	$('#user_name').attr('contenteditable','true')
 	$('#user_name').focus()
@@ -123,6 +177,18 @@ Template.userprofile.events({
 	$('#user_interest').attr('contenteditable','true')
 	$('#user_interest').focus()
   },
+'click #edit_skills': function () {
+        $('#user_skills').attr('contenteditable','true')
+        $('#user_skills').focus()
+  },
+'click #edit_location': function () {
+        $('#user_location').attr('contenteditable','true')
+        $('#user_location').focus()
+  },
+'click #edit_birthdate': function () {
+        $('#user_birthdate').attr('contenteditable','true')
+        $('#user_birthdate').focus()
+  },
    'blur #user_name': function () {
 	var text = $('#user_name').html()
 	$('#user_name').html('');
@@ -134,7 +200,9 @@ Template.userprofile.events({
   'blur #user_occupation': function () {
 	var text = $('#user_occupation').html()
 	$('#user_occupation').html('')
-	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.occupation": text}})
+	Meteor.call("update_user_profile",{"profile.occupation": text},function(error,result){
+	})
+//	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.occupation": text}})
 //	$('#user_occupation').html(text)
 	$('#user_occupation').attr('contenteditable','false')
 	$('#edit_occupation').removeAttr("disabled");
@@ -142,16 +210,43 @@ Template.userprofile.events({
 'blur #user_bio': function () {
 	var bio = $('#user_bio').html()
 	$('#user_bio').html('');
-	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.bio": bio}})
+	Meteor.call("update_user_profile",{"profile.bio": bio},function(error,result){
+	})
+	//Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.bio": bio}})
 //	$('#user_bio').html(bio);
 	$('#user_bio').attr('contenteditable','false')
  },
 'blur #user_interest': function () {
 	var interest = $('#user_interest').html()
 	$('#user_interest').html('')
-	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.interest": interest}})
+	Meteor.call("update_user_profile",{"profile.interest": interest})
+//	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.interest": interest}})
 //	$('#user_interest').html(interest)
 	$('#user_interest').attr('contenteditable','false')
+  },
+'blur #user_skills': function () {
+        var skills = $('#user_skills').html()
+        $('#user_skills').html('')
+	Meteor.call("update_user_profile",{"profile.skills": skills})
+//        Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.skills": skills}})
+//      $('#user_interest').html(interest)
+        $('#user_skills').attr('contenteditable','false')
+  },
+'blur #user_location': function () {
+        var locations = $('#user_location').val()
+        //$('#user_location').val('')
+	Meteor.call("update_user_profile",{"profile.location": locations})  
+  //    Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.location": locations}})
+//      $('#user_interest').html(interest)
+        $('#user_location').attr('contenteditable','false')
+  },
+'blur #user_birthdate': function () {
+        var birthdate = $('#user_birthdate').val()
+        //$('#user_birthdate').val('')
+	Meteor.call("update_user_profile",{"profile.birthdate": birthdate})
+//        Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.birthdate": birthdate}})
+//      $('#user_interest').html(interest)
+        $('#user_birthdate').attr('contenteditable','false')
   },
    'click .follow': function () {
 	q_id = this._id
@@ -165,17 +260,65 @@ Template.userprofile.events({
                 $(div_id).html("Follow");
                 }
 		})
-        }
+        },
+	 'click .comment_ans': function () {
+                div_id = '#comment' + this._id;
+                $(div_id).show();
+                div_id = '#comment_ans' + this._id;
+                $(div_id).removeClass('comment_ans');
+                $(div_id).addClass('comment_ans_hide');
+                 div_id = '#comment_ansi' + this._id;
+                $(div_id).removeClass('comment_ans');
+                $(div_id).addClass('comment_ans_hide');
+                }
+                ,
+        'click .comment_ans_hide': function () {
+                div_id = '#comment' + this._id;
+                $(div_id).hide();
+                div_id = '#comment_ans' + this._id;
+                $(div_id).addClass('comment_ans');
+                $(div_id).removeClass('comment_ans_hide');
+                div_id = '#comment_ansi' + this._id;
+                $(div_id).addClass('comment_ans');
+                $(div_id).removeClass('comment_ans_hide');
+                },
+        'click .reply_comment': function () {
+                div_id = '#commentreply' + this._id;
+                $(div_id).show();
+                div_id = '#reply_comment' + this._id;
+                $(div_id).removeClass('reply_comment');
+                $(div_id).addClass('reply_comment_hide');
+                }
+                ,
+        'click .reply_comment_hide': function () {
+                div_id = '#commentreply' + this._id;
+                $(div_id).hide();
+                div_id = '#reply_comment' + this._id;
+                $(div_id).addClass('reply_comment');
+                $(div_id).removeClass('reply_comment_hide');
+                }
+
  
 });
-Template.userprofile.files = function () {
+Template.userprofile.coverfiles = function () {
 //		alert(this._id);
 	if (typeof this._id !== 'undefined'){
-	return Images.find({_id: Meteor.users.findOne({_id: this._id}).profile.image_id});
+	return Images.find({_id: Meteor.users.findOne({_id: this._id}).profile.cover_image_id});
 	}
 };
-
-
+Template.userprofile.files = function () {
+//              alert(this._id);
+        if (typeof this._id !== 'undefined'){
+        return Images.find({_id: Meteor.users.findOne({_id: this._id}).profile.image_id});
+        }
+};
+Template.userprofile.checkstatus = function () {
+	if(typeof this.is_status !== 'undefined'){
+		return true;
+	}else{
+		return false;
+	}
+}
 Template.questionPage.rendered = function(){
 	QuestionsIndex.getComponentMethods().search("")
 }
@@ -245,7 +388,44 @@ Template.topic.events({
 		Meteor.call("create_topic_post",hash, function (error, result) {
 			$('#summernote').summernote('reset');
 		})
-	}
+	},
+	 'click .comment_ans': function () {
+                div_id = '#comment' + this._id;
+                $(div_id).show();
+                div_id = '#comment_ans' + this._id;
+                $(div_id).removeClass('comment_ans');
+                $(div_id).addClass('comment_ans_hide');
+                 div_id = '#comment_ansi' + this._id;
+                $(div_id).removeClass('comment_ans');
+                $(div_id).addClass('comment_ans_hide');
+                }
+                ,
+        'click .comment_ans_hide': function () {
+                div_id = '#comment' + this._id;
+                $(div_id).hide();
+                div_id = '#comment_ans' + this._id;
+                $(div_id).addClass('comment_ans');
+                $(div_id).removeClass('comment_ans_hide');
+                div_id = '#comment_ansi' + this._id;
+                $(div_id).addClass('comment_ans');
+                $(div_id).removeClass('comment_ans_hide');
+                },
+        'click .reply_comment': function () {
+                div_id = '#commentreply' + this._id;
+                $(div_id).show();
+                div_id = '#reply_comment' + this._id;
+                $(div_id).removeClass('reply_comment');
+                $(div_id).addClass('reply_comment_hide');
+                }
+                ,
+        'click .reply_comment_hide': function () {
+                div_id = '#commentreply' + this._id;
+                $(div_id).hide();
+                div_id = '#reply_comment' + this._id;
+                $(div_id).addClass('reply_comment');
+                $(div_id).removeClass('reply_comment_hide');
+                }
+
 });
 
 //Modal Functionality Login
@@ -542,7 +722,7 @@ var templateName = 'modal_signIn'
 				username: username,
 				email: email,
 				password: password0,
-				
+					
 			}
 			
 			Accounts.createUser(options, function(error){
@@ -563,6 +743,7 @@ var templateName = 'modal_signIn'
 					// Explicity remove the passwords, so no one can read them.
 					Session.set(password0Key, "")
 					Session.set(password1Key, "")
+					Meteor.call("create_default_fields")
 					Modal.hide()
 				}
 			})
@@ -579,7 +760,7 @@ Tracker.autorun(function () {
 
 Template.question.helpers({
   inputAttributes: function () {
-return { 'class': 'easy-search-input search_box', 'placeholder': 'Start searching...', 'id':'question_input' , 'required': 'true', 'name': 'search', 'autocomplete': 'off'};
+return { 'class': 'easy-search-input search_box', 'placeholder': 'Start searching...', 'id':'question_input' , 'required': 'true', 'name': 'search', 'autocomplete': 'off', 'style':'width:70%;color:white;'};
 },
   questionsIndex: () => QuestionsIndex // instanceof EasySearch.Index
 });
@@ -876,9 +1057,9 @@ Template.index.profilepic_dd = function() {
 )
 	},
    notification_bell: function() {
-        Notification.find({u_id:Meteor.userId(),is_seen:0,is_f_notify:0,"is_type": {
+        Notification.find({ $and:[{u_id:Meteor.userId(),is_seen:0,is_f_notify:0,"is_type": {
         $in: ["comment","reply","answer","user_answer_upvote","user_comment_upvote","user_question_upvote"]
-    }}).observe({
+    }}, {"follower_id": { $ne: [Meteor.userId()] }}]}).observe({
   added: function(id) {
         if(id.is_topic == 0){
                 $('.fa-envelope').siblings('.badge2').show();
@@ -946,6 +1127,15 @@ Template.index.profilepic_dd = function() {
   },
   isQuestionUpvote: function (name) {
     return name === "user_question_upvote"
+  },
+  isAnswerDownvote: function (name) {
+    return name === "user_answer_downvote"
+  },
+  isCommentDownvote: function (name) {
+    return name === "user_comment_downvote"
+  },
+  isQuestionDownvote: function (name) {
+    return name === "user_question_downvote"
   }
   }) 
 
@@ -1481,7 +1671,7 @@ if (Meteor.isServer) {
 		return QuestionsList.find({}, {sort: {created_at: -1},  fields: { text: 1, answers_ids: true, created_at:true, user:true, unique_q_id:1 } }, {limit:limit});
 	});
 	Meteor.publish("answers", function () {
-                return AnswersList.find({}, { fields: { text:1, topic_id:1, ans: 1, comment_ids: true, created_at:true, question_id:true, u_id:true } });
+                return AnswersList.find({}, { fields: { is_status:1, text:1, topic_id:1, ans: 1, comment_ids: true, created_at:true, question_id:true, u_id:true } });
         });
 	Meteor.publish("comments", function () {
                 return CommentsList.find({}, { fields: { comment: 1, commentreply_ids: true, created_at:true, answer_id:true, u_id:true } });
@@ -1678,30 +1868,90 @@ Router.route('/user/:_id', {
          transform: function(doc) {
 		doc.followers = FollowList.find({following_ids:q_id})
 		doc.is_followed = FollowList.findOne({following_ids:q_id, u_id:Meteor.userId()})
-		return doc
-	}})
-}});
+		 doc.answersObj = AnswersList.find({u_id: q_id}, {sort: {created_at: -1},transform: function(doc){
+                        doc.countupVoteAnsObj = Votes.find({answer_id: doc._id,upvote:1})
+                        doc.countdownVoteAnsObj = Votes.find({answer_id: doc._id,downvote:1})
+                        doc.isupvotedans = Votes.find({answer_id: doc._id,upvote:1,u_id: Meteor.userId()})
+                        doc.isdownvotedans = Votes.find({answer_id: doc._id,downvote:1,u_id: Meteor.userId()})
+                        doc.answer_user = Meteor.users.findOne({_id: doc.u_id})
+			if (typeof doc.question_id !== 'undefined'){
+                        doc.is_answered = AnswersList.find({question_id: doc.question_id, u_id: Meteor.userId()})
+			}
+                        if (typeof doc.answer_user !== 'undefined'){
+                                if (typeof doc.answer_user.profile !== 'undefined'){
+                        		doc.answer_user_image = Images.findOne({_id: doc.answer_user.profile.image_id})
+                                }
+                        }
+			if (typeof doc.comment_ids !== 'undefined') {
+                                doc.commentsmulti = CommentsList.find({  _id:  {$in: doc.comment_ids}
+                                },{sort: {created_at: -1},transform: function(doc){
+                                  doc.countupVoteCommentObj = Votes.find({comment_id: doc._id,upvote:1})
+                        doc.countdownVoteCommentObj = Votes.find({comment_id: doc._id,downvote:1})
+                        doc.isupvotedcomment = Votes.find({comment_id: doc._id,upvote:1,u_id: Meteor.userId()})
+                        doc.isdownvotedcomment = Votes.find({comment_id: doc._id,downvote:1,u_id: Meteor.userId()})
+                        doc.comment_user = Meteor.users.findOne({_id: doc.u_id})
+                        if (typeof doc.comment_user !== 'undefined'){
+                                if (typeof doc.comment_user.profile !== 'undefined'){
+                        doc.comment_user_image = Images.findOne({_id: doc.comment_user.profile.image_id})  }                        }
+			 if (typeof doc.commentreply_ids !== 'undefined') {
+                                doc.commentsreplymulti =ReplyComment.find({   _id:  {$in: doc.commentreply_ids}
+                                },{sort: {created_at: -1},transform: function(doc){
+                                  doc.countupVoteCommentReplyObj = Votes.find({commentreply_id: doc._id,upvote:1})
+                                doc.countdownVoteCommentReplyObj = Votes.find({commentreply_id: doc._id,downvote:1})
+                                doc.isupvotedcommentreply = Votes.find({commentreply_id: doc._id,upvote:1,u_id: Meteor.userId()})
+                                doc.isdownvotedcommentreply = Votes.find({commentreply_id: doc._id,downvote:1,u_id: Meteor.userId()})
+                                doc.reply_user = Meteor.users.findOne({_id: doc.u_id})
+                                        if (typeof doc.reply_user !== 'undefined'){
+                                                if (typeof doc.reply_user.profile !== 'undefined'){
+                                                doc.reply_user_image = Images.findOne({_id: doc.reply_user.profile.image_id}) } }
+			return doc			}})}
+			return doc			}})}
+			return doc			}})
+			return doc		}})}});
 Router.route('/topic/:_id', {
     template: 'topic',
-    data: function(){
-        var q_id = this.params._id;
+    data: function(){ var q_id = this.params._id;
         return TopicList.findOne({unique_q_id:q_id},{
 	 transform: function(doc) {
 		doc.topicanswers = AnswersList.find({topic_id:doc._id},{sort:{created_at:-1},
-		transform: function(doc){
-			doc.answer_user = Meteor.users.findOne({_id: doc.u_id})
-			  if (typeof doc.answer_user !== 'undefined'){
-		                if (typeof doc.answer_user.profile !== 'undefined'){
-       					 doc.answer_user_image = Images.findOne({_id: doc.answer_user.profile.image_id})
-		                }
-		        }
-			return doc
-		}
-		})
+		transform: function(doc){ doc.countupVoteAnsObj = Votes.find({answer_id: doc._id,upvote:1})
+                        doc.countdownVoteAnsObj = Votes.find({answer_id: doc._id,downvote:1})
+                        doc.isupvotedans = Votes.find({answer_id: doc._id,upvote:1,u_id: Meteor.userId()})
+                        doc.isdownvotedans = Votes.find({answer_id: doc._id,downvote:1,u_id: Meteor.userId()})
+                        doc.answer_user = Meteor.users.findOne({_id: doc.u_id})
+                        if (typeof doc.question_id !== 'undefined'){
+                        doc.is_answered = AnswersList.find({question_id: doc.question_id, u_id: Meteor.userId()})    }
+                        if (typeof doc.answer_user !== 'undefined'){
+                                if (typeof doc.answer_user.profile !== 'undefined'){
+                                        doc.answer_user_image = Images.findOne({_id: doc.answer_user.profile.image_id})    }  }
+                        if (typeof doc.comment_ids !== 'undefined') {
+                                doc.commentsmulti = CommentsList.find({  _id:  {$in: doc.comment_ids}
+                                },{sort: {created_at: -1},transform: function(doc){
+                                  doc.countupVoteCommentObj = Votes.find({comment_id: doc._id,upvote:1})
+                        doc.countdownVoteCommentObj = Votes.find({comment_id: doc._id,downvote:1})
+                        doc.isupvotedcomment = Votes.find({comment_id: doc._id,upvote:1,u_id: Meteor.userId()})
+                        doc.isdownvotedcomment = Votes.find({comment_id: doc._id,downvote:1,u_id: Meteor.userId()})
+                        doc.comment_user = Meteor.users.findOne({_id: doc.u_id})
+                        if (typeof doc.comment_user !== 'undefined'){
+                                if (typeof doc.comment_user.profile !== 'undefined'){
+                        doc.comment_user_image = Images.findOne({_id: doc.comment_user.profile.image_id})  }                        }
+                         if (typeof doc.commentreply_ids !== 'undefined') {
+                                doc.commentsreplymulti =ReplyComment.find({   _id:  {$in: doc.commentreply_ids}
+                                },{sort: {created_at: -1},transform: function(doc){
+                                  doc.countupVoteCommentReplyObj = Votes.find({commentreply_id: doc._id,upvote:1})
+                                doc.countdownVoteCommentReplyObj = Votes.find({commentreply_id: doc._id,downvote:1})
+                                doc.isupvotedcommentreply = Votes.find({commentreply_id: doc._id,upvote:1,u_id: Meteor.userId()})
+                                doc.isdownvotedcommentreply = Votes.find({commentreply_id: doc._id,downvote:1,u_id: Meteor.userId()})
+                                doc.reply_user = Meteor.users.findOne({_id: doc.u_id})
+                                        if (typeof doc.reply_user !== 'undefined'){
+                                                if (typeof doc.reply_user.profile !== 'undefined'){
+                                                doc.reply_user_image = Images.findOne({_id: doc.reply_user.profile.image_id}) } }
+                        return doc                      }})}
+                        return doc                      }})}
+                        return doc                      }})
                 doc.followers = FollowList.find({following_topic_ids:doc._id})
                 doc.is_followed = FollowList.findOne({following_topic_ids:doc._id, u_id:Meteor.userId()})
                 return doc
-
 }})
 }});
 
@@ -1728,6 +1978,10 @@ ChatMessage.update(unread_messages[i]._id,{$set:{"is_seen": 1}})
 },
 upload_profile_pic: function (fileObj_id) {
                 Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.image_id": fileObj_id}})
+
+},
+upload_cover_pic: function (fileObj_id) {
+                Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.cover_image_id": fileObj_id}})
 
 },
 userfollow: function(q_id) {
@@ -1839,7 +2093,12 @@ userfollow: function(q_id) {
 	},
 
 	create_topic_post: function(hash) {
-	AnswersList.insert({text:hash.text,topic_id:hash.topic_id,created_at:new Date(),u_id:Meteor.userId()})	
+	if ((typeof hash.is_status !== 'undefined') && (hash.is_status == 1)){
+	AnswersList.insert({text:hash.text,topic_id:hash.topic_id,created_at:new Date(),u_id:Meteor.userId(),is_status:1})	
+	}else
+	{
+	AnswersList.insert({text:hash.text,topic_id:hash.topic_id,created_at:new Date(),u_id:Meteor.userId()})
+	}
 	},
 	
 	question_ask: function(hash) {
@@ -1905,6 +2164,7 @@ userfollow: function(q_id) {
 	},
 	comment_insert: function(q_id,comment) {
 	thiselement = AnswersList.findOne({_id:q_id})	
+	if (typeof thiselement.topic_id == 'undefined'){
 	var q_id = thiselement._id;
         var q_text = thiselement.ans;
         var q_date = thiselement.created_at
@@ -1926,7 +2186,31 @@ userfollow: function(q_id) {
         AnswersList.update({_id: q_id}, {ans: q_text, comment_ids: q_comment_ids, created_at: q_date, u_id:q_uid, question_id:q_qid })
         Notification.insert({u_id:q_uid,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"comment",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
         });
+	}else{
+	 var q_id = thiselement._id;
+        var q_text = thiselement.text;
+        var q_date = thiselement.created_at
+        var q_uid = thiselement.u_id
+        var q_qid = thiselement.topic_id
+        if (this.comment_ids != null){
+        var q_comment_ids = thiselement.comment_ids;
+        }else{
+        var q_comment_ids = [];
+        }
+        CommentsList.insert({
+                comment: comment,
+                answer_id: thiselement._id,
+                u_id: Meteor.userId(),
+                created_at: new Date(),
+                commentreply_ids: [],
+    },  function(err,docsInserted){
+        q_comment_ids.push(docsInserted)
+        AnswersList.update({_id: q_id}, {text: q_text, comment_ids: q_comment_ids, created_at: q_date, u_id:q_uid, topic_id:q_qid })
+        Notification.insert({u_id:q_uid,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"comment",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
+        });
 
+
+	}
 
 	},
 
@@ -2140,7 +2424,20 @@ userfollow: function(q_id) {
 	},
 	remove_message_notification: function(q_id){
                 ChatMessage.update(q_id,{$set:{is_seen:1}})
-        } 
-	
+        },
+
+	create_default_fields: function(){
+	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.occupation": '',"profile.skills": '',"profile.bio": '',"profile.birthdate": '',"profile.location": ''}})
+	},
+	update_user_profile: function(text,attr){
+	console.log(attr)
+	console.log(text)
+	var attr = JSON.stringify(attr)
+	var text = JSON.stringify(text)
+	Meteor.users.update({_id:Meteor.userId()}, {$set:{attr:text}})
+	},
+	 update_user_profile: function(hash){
+        Meteor.users.update({_id:Meteor.userId()}, {$set:hash})
+        }	
 
 });

@@ -23,7 +23,7 @@
 		 {{#if currentUser}}
 		{{chat}}
 		{{/if}}
-	    <p style="position:fixed;bottom:0;width:100%;">Copyright &copy; Topicerrati.com, 2015-2016.</p>
+	    <!--<p style="float:left;bottom:0;width:100%;">Copyright &copy; Topicerrati.com, 2015-2016.</p>-->
 	</template>
 
 	<template name="login">
@@ -138,7 +138,7 @@
 	</template>
 	<template name="home">
 	      {{>rightrecent}}
-	      <div style="float:left;margin-top:7%;">
+	      <div style="float:left;margin-top:8%;margin-left:25%;width:75%;">
 	      {{# each ques}}
 	      {{> everyq}}
 	      {{/each }}
@@ -156,7 +156,7 @@
 
 <template name="questionPage">
 	{{>rightrecent}}
-	<div style="float:left;margin-top:7%;width:100%;">
+	<div style="float:left;margin-top:8%;width:75%;margin-left:25%;">
 	{{>everyq}}
 	</div>
 	{{#if currentUser}}
@@ -186,18 +186,820 @@
         			<button id="post_in_topic{{_id}}" class="btn post_topic" style="background-color:#337ab7;color:white;margin-left:96%;">Post</button>
 				{{/if}}
 	{{#each topicanswers}}
-		<div style="word-wrap:break-word;font-size:16px;border-radius:4px;border: 2px solid #337ab7;margin-top:2%"> <b><a href="/user/{{this.answer_user._id}}">
+		<div class="card card-inverse card-primary text-xs-center" style="width:100%;float:left">
+		     <div class="card-block">
+			<div style="word-wrap:break-word;font-size:16px;margin-top:2%"> <b><a href="/user/{{this.answer_user._id}}">
                          {{#if this.answer_user_image}}
                         <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.answer_user_image.url store='thumbs'}}">
                         {{/if}}
-                        {{this.answer_user.username}} :</a></b> {{{text}}}</div>
+                        {{this.answer_user.username}} :</a></b> {{{text}}}
 
+			{{>answer_voting}}
+			</div>
+		     </div>
+		</div>
 	{{/each}}
 	</div>
 	</div>
 </template>
 
 <template name="userprofile">
+
+ <div id="main">
+    <!-- START WRAPPER -->
+    <div class="wrapper">
+      <!-- START LEFT SIDEBAR NAV-->
+      <!-- END LEFT SIDEBAR NAV-->
+
+      <!-- //////////////////////////////////////////////////////////////////////////// -->
+
+      <!-- START CONTENT -->
+      <section id="content">        
+
+        <!--start container-->
+        <div class="container">
+
+          <div id="profile-page" class="section" style="margin-top:10%;">
+            <!-- profile-page-header -->
+            <div id="profile-page-header" class="card">
+                <div class="card-image waves-effect waves-block waves-light">
+			{{#if legaluser}}
+                        <input  style="color: transparent;position:absolute;float:left;z-index:1;" type="file" class="myCoverInput"  alt="Submit" width="48" height="48">
+                        {{/if}}
+		      {{#each coverfiles}}
+                          <img src="{{url store="cover"}}"  alt="profile image" style="max-height:200px;">
+                        {{/each}}
+                    <!--<img class="" src="http://demo.geekslabs.com/materialize/v2.1/layout01/images/user-profile-bg.jpg" alt="user background">                    -->
+                </div>
+                <figure class="card-profile-image">
+		    {{#each files}}
+                          <img src="{{url store="small"}}"  alt="profile image" class="circle z-depth-2 responsive-img">
+                        {{/each}}
+                        {{#if legaluser}}
+                        <input  style="color: transparent;margin-top:-10%;margin-left:10%;" type="file" class="myFileInput"  alt="Submit" width="48" height="48">
+                        {{/if}}
+
+                </figure>
+                <div class="card-content">
+                  <div class="row">                    
+                    <div class="col s3 offset-s2">                        
+                        <h4 class="card-title grey-text text-darken-4" contenteditable="false" id="user_name">{{username}}</h4>
+                        <!--<p class="medium-small grey-text">Project Manager</p>                      
+			 {{#if currentUser}}
+                                {{#if legaluser}}
+                                {{else}}
+                                {{#if this.is_followed}}
+                                <button id="follow{{_id}}" class="btn follow" style="background-color:#337ab7;color:white">Unfollow</button>
+                                {{else}}
+                                <button id="follow{{_id}}" class="btn follow" style="background-color:#337ab7;color:white">Follow</button>
+                                {{/if}}
+                                {{/if}}
+                                <button id="following{{_id}}" class="btn following" style="background-color:#BB64ED;color:white">Followers[{{this.followers.count}}]</button>
+                                {{/if}}
+
+  -->
+                    </div>
+		    {{#if currentUser}}
+                    {{#if legaluser}}
+                     {{else}}
+                    <div class="col s3">
+			{{#if this.is_followed}}
+			<button id="follow{{_id}}" class="card-title btn follow" style="border-radius: 60%;width: 32%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;">Unfollow</button>
+			{{else}}
+                                <button id="follow{{_id}}" class="card-title btn follow" style="border-radius: 60%;width: 32%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;">Follow</button>
+                                {{/if}}
+                    </div>
+			{{/if}}
+			<div style="margin-top:3%;">
+			<div class="col s3 card amber darken-2">
+		                  <div class="card-content white-text center-align">
+                		    <p class="card-title"><i class="mdi-social-group-add"></i> {{this.followers.count}}</p>
+		                    <p>Followers</p>
+                		  </div>                  
+	                </div>
+			</div>
+			{{/if}}                    
+                  </div>
+                </div>
+                <div class="card-reveal" style="display: none; transform: translateY(0px);">
+                    <p>
+                      <span class="card-title grey-text text-darken-4">Roger Waters <i class="mdi-navigation-close right"></i></span>
+                      <span><i class="mdi-action-perm-identity cyan-text text-darken-2"></i> Project Manager</span>
+                    </p>
+
+                    <p>I am a very simple card. I am good at containing small bits of information. I am convenient because I require little markup to use effectively.</p>
+                    
+                    <p><i class="mdi-action-perm-phone-msg cyan-text text-darken-2"></i> +1 (612) 222 8989</p>
+                    <p><i class="mdi-communication-email cyan-text text-darken-2"></i> mail@domain.com</p>
+                    <p><i class="mdi-social-cake cyan-text text-darken-2"></i> 18th June 1990</p>
+                    <p><i class="mdi-device-airplanemode-on cyan-text text-darken-2"></i> BAR - AUS</p>
+                </div>
+            </div>
+            <!--/ profile-page-header -->
+
+            <!-- profile-page-content -->
+            <div id="profile-page-content" class="row">
+              <!-- profile-page-sidebar-->
+              <div id="profile-page-sidebar" class="col s12 m4">
+                <!-- Profile About  -->
+                <div class="card light-blue" >
+                  <div class="card-content white-text" style="background-color:#337ab7;">
+                    <span class="card-title">About Me!</span>
+		    {{#if legaluser}}
+		    <i class="fa fa-pencil-square-o fa-2" id="edit_bio" style="margin-left:57%;"></i>
+		    {{/if}}
+		    <p><span contenteditable="false" id="user_bio">{{{profile.bio}}}</span></p>
+                  </div>                  
+                </div>
+                <!-- Profile About  -->
+
+                <!-- Profile About Details  -->
+                <ul id="profile-page-about-details" class="collection z-depth-1">
+                  <li class="collection-item">
+                    <div class="row">
+                      <div class="col s4 grey-text darken-1"><i class="mdi-action-wallet-travel"></i>Occupation</div>
+			   {{#if legaluser}}
+	                    <i class="fa fa-pencil-square-o fa-1" id="edit_occupation" style="margin-left:57%;"></i>
+        	            {{/if}}
+                      <div class="col s7 grey-text text-darken-4 right-align" contenteditable="false" id="user_occupation">{{{profile.occupation}}}</div>
+                    </div>
+                  </li>
+                  <li class="collection-item">
+                    <div class="row">
+                      <div class="col s4 grey-text darken-1"><i class="mdi-social-poll"></i> Skills</div>
+                    	    {{#if legaluser}}
+                            <i class="fa fa-pencil-square-o fa-1" id="edit_skills" style="margin-left:57%;"></i>
+                            {{/if}}
+                      <div class="col s7 grey-text text-darken-4 right-align" contenteditable="false" id="user_skills">{{{profile.skills}}}</div>
+			</div>
+                  </li>
+                  <li class="collection-item">
+                    <div class="row">
+                      <div class="col s4 grey-text darken-1"><i class="mdi-social-domain"></i> Lives in</div>
+                    	 {{#if legaluser}}
+                            <i class="fa fa-pencil-square-o fa-1" id="edit_location" style="margin-left:57%;"></i>
+                            {{/if}}
+                      <div class="col s7 grey-text text-darken-4 right-align" ><input type="text" contenteditable="false" id="user_location" value="{{profile.location}}"></div>
+		    </div>
+                  </li>
+                  <li class="collection-item">
+                    <div class="row">
+                      <div class="col s4 grey-text darken-1"><i class="mdi-social-cake"></i> Birth date</div>
+                       {{#if legaluser}}
+                            <i class="fa fa-pencil-square-o fa-1" id="edit_birthdate" style="margin-left:57%;"></i>
+                            {{/if}}
+                      <div class="col s7 grey-text text-darken-4 right-align"><input type="text" id="user_birthdate" value="{{profile.birthdate}}"></div>
+			 {{#if setbirthdate}}
+                        {{/if}}
+ 
+		    </div>
+                  </li>
+                </ul>
+                <!--/ Profile About Details  -->
+
+                <!-- Profile About  -->
+                <div class="card amber darken-2">
+                  <div class="card-content white-text center-align">
+                    <p class="card-title"><i class="mdi-social-group-add"></i> 3685</p>
+                    <p>Followers</p>
+                  </div>                  
+                </div>
+                <!-- Profile About  -->
+
+                <!-- Profile feed  -->
+		<!--
+                <ul id="profile-page-about-feed" class="collection z-depth-1">
+                  <li class="collection-item avatar">
+                    <img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle">
+                    <span class="title">Project Title</span>
+                    <p>Task assigned to new changes.
+                      <br> <span class="ultra-small">Second Line</span>
+                    </p>
+                    <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!" class="secondary-content"><i class="mdi-action-grade"></i></a>
+                  </li>
+                  <li class="collection-item avatar">
+                    <i class="mdi-file-folder circle"></i>
+                    <span class="title">New Project</span>
+                    <p>First Line of Project Work 
+                      <br> <span class="ultra-small">Second Line</span>
+                    </p>
+                    <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!" class="secondary-content"><i class="mdi-social-domain"></i></a>
+                  </li>
+                  <li class="collection-item avatar">
+                    <i class="mdi-action-assessment circle green"></i>
+                    <span class="title">New Payment</span>
+                    <p>Last UK Project Payment
+                      <br> <span class="ultra-small">$ 3,684.00</span>
+                    </p>
+                    <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!" class="secondary-content"><i class="mdi-editor-attach-money"></i></a>
+                  </li>
+                  <li class="collection-item avatar">
+                    <i class="mdi-av-play-arrow circle red"></i>
+                    <span class="title">Latest News</span>
+                    <p>company management news
+                      <br> <span class="ultra-small">Second Line</span>
+                    </p>
+                    <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!" class="secondary-content"><i class="mdi-action-track-changes"></i></a>
+                  </li>
+                </ul>-->
+                <!-- Profile feed  -->
+
+                <!-- task-card -->
+		<!--
+                <ul id="task-card" class="collection with-header">
+                  <li class="collection-header cyan">
+                      <h4 class="task-card-title">My Task</h4>
+                      <p class="task-card-date">March 26, 2015</p>
+                  </li>
+                  <li class="collection-item dismissable" style="touch-action: pan-y; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+                      <input type="checkbox" id="task1">
+                      <label for="task1" style="text-decoration: none;">Create Mobile App UI. <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#" class="secondary-content"><span class="ultra-small">Today</span></a>
+                      </label>
+                      <span class="task-cat teal">Mobile App</span>
+                  </li>
+                  <li class="collection-item dismissable" style="touch-action: pan-y; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+                      <input type="checkbox" id="task2">
+                      <label for="task2" style="text-decoration: none;">Check the new API standerds. <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#" class="secondary-content"><span class="ultra-small">Monday</span></a>
+                      </label>
+                      <span class="task-cat purple">Web API</span>
+                  </li>
+                  <li class="collection-item dismissable" style="touch-action: pan-y; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+                      <input type="checkbox" id="task3" checked="checked">
+                      <label for="task3" style="text-decoration: line-through;">Check the new Mockup of ABC. <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#" class="secondary-content"><span class="ultra-small">Wednesday</span></a>
+                      </label>
+                      <span class="task-cat pink">Mockup</span>
+                  </li>
+                  <li class="collection-item dismissable" style="touch-action: pan-y; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
+                      <input type="checkbox" id="task4" checked="checked" disabled="disabled">
+                      <label for="task4" style="text-decoration: line-through;">I did it !</label>
+                      <span class="task-cat cyan">Mobile App</span>
+                  </li>
+                </ul>-->
+                <!-- task-card -->
+
+                <!-- Profile Total sell -->
+		<!--
+                <div class="card center-align">
+                  <div class="card-content purple white-text">
+                      <p class="card-stats-title"><i class="mdi-editor-attach-money"></i>Your Profit</p>
+                      <h4 class="card-stats-number">$8990.63</h4>
+                      <p class="card-stats-compare"><i class="mdi-hardware-keyboard-arrow-up"></i> 70% <span class="purple-text text-lighten-5">last month</span>
+                      </p>
+                  </div>
+                  <div class="card-action purple darken-2">
+                      <div id="sales-compositebar"><canvas width="286" height="25" style="display: inline-block; width: 286px; height: 25px; vertical-align: top;"></canvas></div>
+                  </div>
+                </div>
+		-->
+                <!-- flight-card -->
+		<!--
+                <div id="flight-card" class="card">
+                    <div class="card-header amber darken-2">
+                        <div class="card-title">
+                            <h4 class="flight-card-title">Your Next Flight</h4>
+                            <p class="flight-card-date">June 18, Thu 04:50</p>
+                        </div>
+                    </div>
+                    <div class="card-content-bg white-text">
+                        <div class="card-content">
+                            <div class="row flight-state-wrapper">
+                                <div class="col s5 m5 l5 center-align">
+                                    <div class="flight-state">
+                                        <h4 class="margin">LDN</h4>
+                                        <p class="ultra-small">London</p>
+                                    </div>
+                                </div>
+                                <div class="col s2 m2 l2 center-align">
+                                    <i class="mdi-device-airplanemode-on flight-icon"></i>
+                                </div>
+                                <div class="col s5 m5 l5 center-align">
+                                    <div class="flight-state">
+                                        <h4 class="margin">SFO</h4>
+                                        <p class="ultra-small">San Francisco</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s6 m6 l6 center-align">
+                                    <div class="flight-info">
+                                        <p class="small"><span class="grey-text text-lighten-4">Depart:</span> 04.50</p>
+                                        <p class="small"><span class="grey-text text-lighten-4">Flight:</span> IB 5786</p>
+                                        <p class="small"><span class="grey-text text-lighten-4">Terminal:</span> B</p>
+                                    </div>
+                                </div>
+                                <div class="col s6 m6 l6 center-align flight-state-two">
+                                    <div class="flight-info">
+                                        <p class="small"><span class="grey-text text-lighten-4">Arrive:</span> 08.50</p>
+                                        <p class="small"><span class="grey-text text-lighten-4">Flight:</span> IB 5786</p>
+                                        <p class="small"><span class="grey-text text-lighten-4">Terminal:</span> C</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>-->
+                <!-- flight-card -->
+
+                <!-- Map Card -->
+		<!--
+                <div class="map-card">
+                    <div class="card">
+                        <div class="card-image waves-effect waves-block waves-light">
+                        </div>
+                        <div class="card-content">                    
+                            <a class="btn-floating activator btn-move-up waves-effect waves-light darken-2 right">
+                                <i class="mdi-maps-pin-drop"></i>
+                            </a>
+                            <h4 class="card-title grey-text text-darken-4"><a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#" class="grey-text text-darken-4">Company Name LLC</a>
+                            </h4>
+                            <p class="blog-post-content">Some more information about this company.</p>
+                        </div>
+                        <div class="card-reveal">
+                            <span class="card-title grey-text text-darken-4">Company Name LLC <i class="mdi-navigation-close right"></i></span>                   
+                            <p>Here is some more information about this company. As a creative studio we believe no client is too big nor too small to work with us to obtain good advantage.By combining the creativity of artists with the precision of engineers we develop custom solutions that achieve results.Some more information about this company.</p>
+                            <p><i class="mdi-action-perm-identity cyan-text text-darken-2"></i> Manager Name</p>
+                            <p><i class="mdi-communication-business cyan-text text-darken-2"></i> 125, ABC Street, New Yourk, USA</p>
+                            <p><i class="mdi-action-perm-phone-msg cyan-text text-darken-2"></i> +1 (612) 222 8989</p>
+                            <p><i class="mdi-communication-email cyan-text text-darken-2"></i> support@geekslabs.com</p>                    
+                        </div>
+                    </div>
+                </div>
+			-->
+                <!-- Map Card -->
+
+              </div>
+              <!-- profile-page-sidebar-->
+              <!-- profile-page-wall -->
+              <div id="profile-page-wall" class="col s12 m8">
+                <!-- profile-page-wall-share -->
+		{{#if legaluser}}
+                <div id="profile-page-wall-share" class="row">
+                  <div class="col s12">
+                    <ul class="tabs tab-profile z-depth-1 light-blue" style="width: 100%;background-color:#337ab7;">
+                      <li class="tab col s3" style="width: 33.3333333333333%;background-color:#337ab7;"><a class="white-text waves-effect waves-light active" href="#UpdateStatus"><i class="mdi-editor-border-color"></i> Update Status</a>
+                      </li>
+                      <li class="tab col s3" style="width: 33.3333333333333%;background-color:#337ab7;"><a class="white-text waves-effect waves-light" href="#AddPhotos"><i class="mdi-image-camera-alt"></i> Add Photos</a>
+                      </li>
+                      <li class="tab col s3" style="width: 33.3333333333333%;background-color:#337ab7;"><a class="white-text waves-effect waves-light" href="#AskQuestion"><i class="mdi-image-photo-album"></i>Ask  Question</a>
+                      </li>                      
+                    <div class="indicator" style="right: 479px; left: 0px;"></div></ul>
+                    <!-- UpdateStatus-->
+                    <div id="UpdateStatus" class="tab-content col s12  grey lighten-4">
+                      <div class="row">
+                        <div class="col s2">
+                          <img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img valign profile-image-post">
+                        </div>
+                        <div class="input-field col s10">
+                          <textarea id="textarea" row="2" class="materialize-textarea"></textarea>
+                          <label for="textarea" class="">What's on your mind?</label>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col s12 m6 share-icons">
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-image-camera-alt"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-action-account-circle"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-hardware-keyboard-alt"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-communication-location-on"></i></a>
+                        </div>
+                        <div class="col s12 m6 right-align">
+                            <a class="dropdown-button btn" style="background-color:#337ab7;" href="" data-activates="profilePost"><i class="mdi-action-language"></i> Public</a>
+			    <ul id="profilePost" class="dropdown-content">
+                              <li><a href=""><i class="mdi-action-language"></i> Public</a></li>
+                              <li><a href=""><i class="mdi-action-face-unlock"></i> Friends</a></li>                              
+                              <li><a href=""><i class="mdi-action-lock-outline"></i> Only Me</a></li>
+                            </ul>
+
+                            
+
+                            <a class="waves-effect waves-light btn post_profile" style="background-color:#337ab7;"><i class="mdi-maps-rate-review left"></i>Post</a>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- AddPhotos -->
+                    <div id="AddPhotos" class="tab-content col s12  grey lighten-4" style="display: none;">
+                      <div class="row">
+                        <div class="col s2">
+                          <img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img valign profile-image-post">
+                        </div>
+                        <div class="input-field col s10">
+                          <textarea id="textarea" row="2" class="materialize-textarea"></textarea>
+                          <label for="textarea" class="">Share your favorites photos!</label>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col s12 m6 share-icons">
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-image-camera-alt"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-action-account-circle"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-hardware-keyboard-alt"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-communication-location-on"></i></a>
+                        </div>
+                        <div class="col s12 m6 right-align">
+                           <!-- Dropdown Trigger -->
+                            <a class="dropdown-button btn" href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#" data-activates="profliePost2"><i class="mdi-action-language"></i> Public</a><ul id="profliePost2" class="dropdown-content">
+                              <li><a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!"><i class="mdi-action-language"></i> Public</a></li>
+                              <li><a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!"><i class="mdi-action-face-unlock"></i> Friends</a></li>                              
+                              <li><a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!"><i class="mdi-action-lock-outline"></i> Only Me</a></li>
+                            </ul>
+
+                            <!-- Dropdown Structure -->
+                            
+
+                            <a class="waves-effect waves-light btn"><i class="mdi-maps-rate-review left"></i>Post</a>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- CreateAlbum -->
+                    <div id="AskQuestion" class="tab-content col s12  grey lighten-4" style="display: none;">
+                      <div class="row">
+                        <div class="col s2">
+                          <img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img valign profile-image-post">
+                        </div>
+                        <div class="input-field col s10">
+                          <textarea id="textarea" row="2" class="materialize-textarea"></textarea>
+                          <label for="textarea" class="">Create awesome album.</label>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col s12 m6 share-icons">
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-image-camera-alt"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-action-account-circle"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-hardware-keyboard-alt"></i></a>
+                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-communication-location-on"></i></a>
+                        </div>
+                        <div class="col s12 m6 right-align">
+                           <!-- Dropdown Trigger -->
+                            <a class="dropdown-button btn" href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#" data-activates="profliePost3"><i class="mdi-action-language"></i> Public</a><ul id="profliePost3" class="dropdown-content">
+                              <li><a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!"><i class="mdi-action-language"></i> Public</a></li>
+                              <li><a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!"><i class="mdi-action-face-unlock"></i> Friends</a></li>                              
+                              <li><a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#!"><i class="mdi-action-lock-outline"></i> Only Me</a></li>
+                            </ul>
+
+                            <!-- Dropdown Structure -->
+                            
+
+                            <a class="waves-effect waves-light btn"><i class="mdi-maps-rate-review left"></i>Post</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!--/ profile-page-wall-share -->
+		{{/if}}
+                <!-- profile-page-wall-posts -->
+                <div id="profile-page-wall-posts" class="row">
+                  <div class="col s12">
+                      <!-- medium -->
+			{{#each this.answersObj}}
+                      <div id="profile-page-wall-post" class="card">
+                        <div class="card-profile-title">
+                          <div class="row">
+                            <div class="col s1">
+                      <!--        <img src="{{this.answer_user_image.url store='thumbs'}}" alt="" class="circle responsive-img valign profile-post-uer-image">                        -->
+                            </div>
+                            <div class="col s10">
+				<!--My code
+				 {{#each this.answersObj}}
+                <div id="" style="margin-top:1%;background-color:#FCFCFC;padding:10px;">
+                <div style="word-wrap:break-word;font-size:15px;">
+                <b>Ans :</b>
+                {{#if this.is_answered.count}}
+                {{#if currentUser}}
+                         <div style="margin-top:5%;display:none;" id="anser{{formatId _id}}">
+                                <form>
+                                {{>editeditor}}
+                                <input type="submit" class="edit_content_answer" style="height:10%;width:20%;" name="Submit" value="Update Answer">
+                                </form>
+                        </div>
+
+                        <div style="float:right;">
+                        <button class="answer_edit {{_id}} edit_answer" id="answer_edit{{_id}}" style="background-color:beige;"><i class="fa fa-pencil-square-o"></i></button>
+                        </div>
+                {{/if}}
+                {{/if}}
+                <div id="edit_content_ans{{_id}}">
+                 {{{ans}}}
+                </div>
+                </div>
+                <div style="font-size:10px;"><a href="/user/{{this.answer_user._id}}">
+                {{#if this.answer_user_image}}
+                <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.answer_user_image.url store='thumbs'}}">
+                {{/if}}
+{{this.answer_user.username}}</a></div>
+                {{>answer_voting}}
+                </div>
+                {{else}}
+
+                {{/each}}
+			-->
+		
+
+                              <p class="grey-text text-darken-4 margin">{{this.answer_user.username}}</p>
+                              <span class="grey-text text-darken-1 ultra-small">{{formatDate this.created_at}}</span>
+                            </div>
+                            <div class="col s1 right-align">
+                              <i class="mdi-navigation-expand-more"></i>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col s12">
+				{{#if checkstatus}}
+				<p>{{{text}}}</p>
+				{{else}}
+                              	<p>{{{ans}}}</p>
+				{{/if}}
+                            </div>
+                          </div>
+                        </div>
+			<!--Use THis whwn albums uploaded
+                        <div class="card-image profile-medium">                          
+                          <img src="./Profile Page _ Materialize - Material Design Admin Template_files/2.jpg" alt="sample" class="responsive-img profile-post-image profile-medium">                        
+                          <span class="card-title">Card Title</span>
+                        </div>
+                        <div class="card-content">
+                          <p>I am a very simple card. I am good at containing small bits of information. I am convenient because I require little markup to use effectively.</p>
+                        </div>-->
+                        <div class="card-action row">
+                        	{{>answer_voting}}
+			</div>                        
+                      </div>
+			{{/each}}
+                      <!-- medium video -->
+		      <!--
+			<div id="profile-page-wall-post" class="card">
+                        <div class="card-profile-title">
+                          <div class="row">
+                            <div class="col s1">
+                              <img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img valign profile-post-uer-image">                        
+                            </div>
+                            <div class="col s10">
+                              <p class="grey-text text-darken-4 margin">John Doe</p>
+                              <span class="grey-text text-darken-1 ultra-small">Shared publicly  -  26 Jun 2015</span>
+                            </div>
+                            <div class="col s1 right-align">
+                              <i class="mdi-navigation-expand-more"></i>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col s12">
+                              <p>I am a very simple wall post. I am good at containing <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">#small</a> bits of <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">#information</a>.  I require little more information to use effectively.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-image profile-medium">
+                          <div class="video-container no-controls">
+                            <iframe width="640" height="360" src="./Profile Page _ Materialize - Material Design Admin Template_files/10r9ozshGVE.html" frameborder="0" allowfullscreen=""></iframe>
+                          </div>                          
+                          <span class="card-title">Card Title</span>
+                        </div>
+                        <div class="card-content">
+                          <p>I am a very simple card. I am good at containing small bits of information. I am convenient because I require little markup to use effectively.</p>
+                        </div>
+                        <div class="card-action row">
+			  {{>answer_voting}}
+                        </div>                        
+                      </div>                      
+
+                      <div id="profile-page-wall-post" class="card">
+                        <div class="card-profile-title">
+                          <div class="row">
+                            <div class="col s1">
+                              <img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img valign profile-post-uer-image">                        
+                            </div>
+                            <div class="col s10">
+                              <p class="grey-text text-darken-4 margin">John Doe</p>
+                              <span class="grey-text text-darken-1 ultra-small">Shared publicly  -  26 Jun 2015</span>
+                            </div>
+                            <div class="col s1 right-align">
+                              <i class="mdi-navigation-expand-more"></i>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col s12">
+                              <p>I am a very simple wall post. I am good at containing <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">#small</a> bits of <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">#information</a>.  I require little more information to use effectively.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-image profile-small">
+                          <img src="./Profile Page _ Materialize - Material Design Admin Template_files/1.jpg" alt="sample" class="responsive-img profile-post-image">                        
+                          <span class="card-title">Card Title</span>
+                        </div>
+                        <div class="card-content">
+                          <p>I am a very simple card. I am good at containing small bits of information. I am convenient because I require little markup to use effectively.</p>
+                        </div>
+                        <div class="card-action row">
+                          <div class="col s4 card-action-share">
+                            <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">Like</a>                          
+                            <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">Share</a>
+                          </div>
+                          
+                          <div class="input-field col s8 margin">
+                            <input id="profile-comments" type="text" class="validate">
+                            <label for="profile-comments" class="">Comments</label>
+                          </div>                        
+                        </div>                        
+                      </div>
+	
+			
+                      <div id="profile-page-wall-post" class="card">
+                        <div class="card-profile-title">
+                          <div class="row">
+                            <div class="col s1">
+                              <img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img valign profile-post-uer-image">                        
+                            </div>
+                            <div class="col s10">
+                              <p class="grey-text text-darken-4 margin">John Doe</p>
+                              <span class="grey-text text-darken-1 ultra-small">Shared publicly  -  26 Jun 2015</span>
+                            </div>
+                            <div class="col s1 right-align">
+                              <i class="mdi-navigation-expand-more"></i>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col s12">
+                              <p>I am a very simple wall post. I am good at containing <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">#small</a> bits of <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">#information</a>.  I require little more information to use effectively.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-image profile-large">
+                          <img src="./Profile Page _ Materialize - Material Design Admin Template_files/3.jpg" alt="sample" class="responsive-img profile-post-image">                        
+                          <span class="card-title">Card Title</span>
+                        </div>
+                        <div class="card-content">
+                          <p>I am a very simple card. I am good at containing small bits of information. I am convenient because I require little markup to use effectively.</p>
+                        </div>
+                        <div class="card-action row">
+                          <div class="col s4 card-action-share">
+                            <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">Like</a>                          
+                            <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">Share</a>
+                          </div>
+                          
+                          <div class="input-field col s8 margin">
+                            <input id="profile-comments" type="text" class="validate">
+                            <label for="profile-comments" class="">Comments</label>
+                          </div>                        
+                        </div>                        
+                      </div>-->
+                  </div>                  
+                </div>
+                <!--/ profile-page-wall-posts -->
+
+              </div>
+              <!--/ profile-page-wall -->
+
+            </div>
+          </div>
+        </div>
+        </section></div>
+        <!--end container-->
+      
+      <!-- END CONTENT -->
+
+      <!-- //////////////////////////////////////////////////////////////////////////// -->
+      <!-- START RIGHT SIDEBAR NAV-->
+      <aside id="right-sidebar-nav">
+        <ul id="chat-out" class="side-nav rightside-navigation right-aligned ps-container ps-active-y" style="width: 300px; right: -310px; height: 766px;">
+            <li class="li-hover">
+            <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#" data-activates="chat-out" class="chat-close-collapse right"><i class="mdi-navigation-close"></i></a>
+            <div id="right-search" class="row">
+                <form class="col s12">
+                    <div class="input-field">
+                        <i class="mdi-action-search prefix"></i>
+                        <input id="icon_prefix" type="text" class="validate">
+                        <label for="icon_prefix">Search</label>
+                    </div>
+                </form>
+            </div>
+            </li>
+            <li class="li-hover">
+                <ul class="chat-collapsible" data-collapsible="expandable">
+                <li class="active">
+                    <div class="collapsible-header teal white-text active"><i class="mdi-social-whatshot"></i>Recent Activity</div>
+                    <div class="collapsible-body recent-activity" style="display: block;">
+                        <div class="recent-activity-list chat-out-list row">
+                            <div class="col s3 recent-activity-list-icon"><i class="mdi-action-add-shopping-cart"></i>
+                            </div>
+                            <div class="col s9 recent-activity-list-text">
+                                <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">just now</a>
+                                <p>Jim Doe Purchased new equipments for zonal office.</p>
+                            </div>
+                        </div>
+                        <div class="recent-activity-list chat-out-list row">
+                            <div class="col s3 recent-activity-list-icon"><i class="mdi-device-airplanemode-on"></i>
+                            </div>
+                            <div class="col s9 recent-activity-list-text">
+                                <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">Yesterday</a>
+                                <p>Your Next flight for USA will be on 15th August 2015.</p>
+                            </div>
+                        </div>
+                        <div class="recent-activity-list chat-out-list row">
+                            <div class="col s3 recent-activity-list-icon"><i class="mdi-action-settings-voice"></i>
+                            </div>
+                            <div class="col s9 recent-activity-list-text">
+                                <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">5 Days Ago</a>
+                                <p>Natalya Parker Send you a voice mail for next conference.</p>
+                            </div>
+                        </div>
+                        <div class="recent-activity-list chat-out-list row">
+                            <div class="col s3 recent-activity-list-icon"><i class="mdi-action-store"></i>
+                            </div>
+                            <div class="col s9 recent-activity-list-text">
+                                <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">Last Week</a>
+                                <p>Jessy Jay open a new store at S.G Road.</p>
+                            </div>
+                        </div>
+                        <div class="recent-activity-list chat-out-list row">
+                            <div class="col s3 recent-activity-list-icon"><i class="mdi-action-settings-voice"></i>
+                            </div>
+                            <div class="col s9 recent-activity-list-text">
+                                <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#">5 Days Ago</a>
+                                <p>Natalya Parker Send you a voice mail for next conference.</p>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="active">
+                    <div class="collapsible-header light-blue white-text active" style="background-color:#337ab7;"><i class="mdi-editor-attach-money"></i>Sales Repoart</div>
+                    <div class="collapsible-body sales-repoart" style="display: block;">
+                        <div class="sales-repoart-list  chat-out-list row">
+                            <div class="col s8">Target Salse</div>
+                            <div class="col s4"><span id="sales-line-1"><canvas width="33" height="30" style="display: inline-block; width: 33px; height: 30px; vertical-align: top;"></canvas></span>
+                            </div>
+                        </div>
+                        <div class="sales-repoart-list chat-out-list row">
+                            <div class="col s8">Payment Due</div>
+                            <div class="col s4"><span id="sales-bar-1"><canvas width="32" height="25" style="display: inline-block; width: 32px; height: 25px; vertical-align: top;"></canvas></span>
+                            </div>
+                        </div>
+                        <div class="sales-repoart-list chat-out-list row">
+                            <div class="col s8">Total Delivery</div>
+                            <div class="col s4"><span id="sales-line-2"><canvas width="33" height="30" style="display: inline-block; width: 33px; height: 30px; vertical-align: top;"></canvas></span>
+                            </div>
+                        </div>
+                        <div class="sales-repoart-list chat-out-list row">
+                            <div class="col s8">Total Progress</div>
+                            <div class="col s4"><span id="sales-bar-2"><canvas width="32" height="25" style="display: inline-block; width: 32px; height: 25px; vertical-align: top;"></canvas></span>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="collapsible-header red white-text"><i class="mdi-action-stars"></i>Favorite Associates</div>
+                    <div class="collapsible-body favorite-associates">
+                        <div class="favorite-associate-list chat-out-list row">
+                            <div class="col s4"><img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img online-user valign profile-image">
+                            </div>
+                            <div class="col s8">
+                                <p>Eileen Sideways</p>
+                                <p class="place">Los Angeles, CA</p>
+                            </div>
+                        </div>
+                        <div class="favorite-associate-list chat-out-list row">
+                            <div class="col s4"><img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img online-user valign profile-image">
+                            </div>
+                            <div class="col s8">
+                                <p>Zaham Sindil</p>
+                                <p class="place">San Francisco, CA</p>
+                            </div>
+                        </div>
+                        <div class="favorite-associate-list chat-out-list row">
+                            <div class="col s4"><img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img offline-user valign profile-image">
+                            </div>
+                            <div class="col s8">
+                                <p>Renov Leongal</p>
+                                <p class="place">Cebu City, Philippines</p>
+                            </div>
+                        </div>
+                        <div class="favorite-associate-list chat-out-list row">
+                            <div class="col s4"><img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img online-user valign profile-image">
+                            </div>
+                            <div class="col s8">
+                                <p>Weno Carasbong</p>
+                                <p>Tokyo, Japan</p>
+                            </div>
+                        </div>
+                        <div class="favorite-associate-list chat-out-list row">
+                            <div class="col s4"><img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img offline-user valign profile-image">
+                            </div>
+                            <div class="col s8">
+                                <p>Nusja Nawancali</p>
+                                <p class="place">Bangkok, Thailand</p>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                </ul>
+            </li>
+        <div class="ps-scrollbar-x-rail" style="left: 0px; bottom: 3px;"><div class="ps-scrollbar-x" style="left: 0px; width: 0px;"></div></div><div class="ps-scrollbar-y-rail" style="top: 0px; height: 706px; right: 3px;"><div class="ps-scrollbar-y" style="top: 0px; height: 650px;"></div></div></ul>
+      </aside>
+      <!-- LEFT RIGHT SIDEBAR NAV-->
+
+    </div>
+    <!-- END WRAPPER -->
+
+
+</template>
+
+<template name="matprofile">
 	<div style="float:left;width:100%;margin-top:5%;">
 		<div style="float:left;margin-top:5%;width:100%;margin-left:12%;">
 			<div style="float:left;width:20%;">
@@ -409,6 +1211,19 @@
                                                 <p class="item-heading">{{this.notify_user.username}} upvoted a comment  by you
                                                 <br> {{formatDate created_at}}</p>
                                                 {{/if}}
+						 {{#if isQuestionDownvote is_type}}
+                                                <p class="item-heading">{{this.notify_user.username}} downvoted a question asked by you
+                                                <br> {{formatDate created_at}}</p>
+                                                {{/if}}
+                                                {{#if  isAnswerDownvote is_type}}
+                                                <p class="item-heading">{{this.notify_user.username}} downvoted an answer given by you
+                                                <br> {{formatDate created_at}}</p>
+                                                {{/if}}
+                                                {{#if  isCommentDownvote is_type}}
+                                                <p class="item-heading">{{this.notify_user.username}} downvoted a comment  by you
+                                                <br> {{formatDate created_at}}</p>
+                                                {{/if}}
+
 <!--        <p class="item-info">Marketing 101, Video Assignment</p>-->
                                                       </div>
                                             </a>
@@ -494,7 +1309,7 @@
 </template>
 
 <template name="modal_signIn">
-	<div class="modal fade" role="dialog" style="z-index:100000;">
+	<div class="modal fade" role="dialog" style="margin-top:0%;max-height:800px;">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				
@@ -576,7 +1391,7 @@
 </template>
 
 <template name="modal_signUp">
-	<div class="modal fade" role="dialog" style="z-index:10000;padding-top:none;">
+	<div class="modal fade" role="dialog" style="margin-top:0%;max-height:800px;padding-top:none;">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				
@@ -664,15 +1479,16 @@
 
 <template name="question">
 
-<div style="float:left;width:100%;position:fixed;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
-	<div style="float:left;width:18%;margin-left:5%;color:white"><h1><a style="color:white;" href="/">Topicerrati</a></h1>
+<div  style="float:left;width:100%;position:fixed;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
+	<div style="float:left;width:18%;margin-left:5%;color:white"><h3><a style="color:white;" href="/">Topicerrati</a></h3>
 		<div>Question Everything</div>
 	</div>
 	<div style="float:left;width:50%;margin-top:1%;border-radius:25px;margin-right:10%;">
 		<form style="height:80px;">
+		
 		 {{> EasySearch.Input index=questionsIndex attributes=inputAttributes}}
 		  <input type="submit" style="height:40px;width:172px;border-radius:80px;margin-top:10px;" value="Search/Ask">
-		  <ul style="margin-left:3%;background-color:#337ab7;">
+		  <ul style="background-color:#337ab7;">
 		   {{#EasySearch.IfInputEmpty index=questionsIndex}}
 		   {{else}}
 		    {{#EasySearch.Each index=questionsIndex}}
@@ -701,16 +1517,18 @@
 </div>
 </template>
 <template name="everyq">
-<div id="quest{{_id}}" style="float:left;width:100%;margin-top:2%;">
-	<div class="rcorners2" style="margin-left:24%;">
+<div class="card card-inverse card-primary text-xs-center" style="width:75%;float:left">
+     <div class="card-block">
+	<div id="quest{{_id}}" style="margin-top:2%;">
+	<div class="" style="">
 <!--Make a link here to every question, that would open up on a new page-->
-		<div style="font-size:18px;"> Question : <b><a href="/question/{{unique_q_id}}">{{text}}</a></b></div>
-		<div style="font-size:10px;"><a href="/user/{{this.question_user._id}}">
+		<div style="font-size:18px;padding:10px;"> Question : <b><a href="/question/{{unique_q_id}}">{{text}}</a></b></div>
+		<div style="font-size:10px;padding:10px;"><a href="/user/{{this.question_user._id}}">
 		{{#if this.question_user_image}}
                 <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.question_user_image.url store='thumbs'}}">
                 {{/if}}
 		{{this.question_user.username}}</a></div>
-		<div style="margin-top:1%;float:left;width:100%;background-color: #F1F1F1;">
+		<div style="margin-left:1%;margin-top:1%;float:left;width:98%;background-color: #F1F1F1;">
 			{{#if this.is_answered.count}}
 			 <!--<div style="float:left;width:20%">
                         <button class="answer {{_id}}" id="answer{{_id}}">Edit Answer</button>
@@ -755,7 +1573,7 @@
 		{{/if}}
 		{{/if}}
 		 {{#each this.answersObj}}
-                <div id="" style="margin-top:5%;background-color:#FCFCFC;">
+                <div id="" style="margin-top:1%;background-color:#FCFCFC;padding:10px;">
                 <div style="word-wrap:break-word;font-size:15px;"> 
 		<b>Ans :</b>
 		{{#if this.is_answered.count}}
@@ -787,6 +1605,8 @@
 
                 {{/each}}
 	</div>
+</div>
+</div>
 </div>
 </template>
 
@@ -979,7 +1799,7 @@
 </template>
 
 <template name="modal_newTopic">
-        <div class="modal fade" role="dialog" style="z-index:10000;">
+        <div class="modal fade" role="dialog" style="margin-top:0%;max-height:800px;">
                 <div class="modal-dialog">
                         <div class="modal-content">
 

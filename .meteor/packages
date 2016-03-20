@@ -36,3 +36,6 @@ accounts-google
 accounts-facebook
 mizzao:user-status
 reactive-var
+materialize:materialize
+rajit:bootstrap3-datepicker
+jeremy:geocomplete
