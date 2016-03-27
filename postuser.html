@@ -1,0 +1,37 @@
+<template name="postuser">
+    <div id="UpdateStatus" class="tab-content col s12  grey lighten-4">
+                                        <div class="row">
+                                                <div class="col s2">
+                                                {{#each postfiles}}
+                                                <img src="{{url store="small"}}" alt="" class="circle responsive-img valign profile-image-post">
+                                                {{/each}}
+                                                </div>
+                                                <div class="input-field col s10">
+                                                  {{#textareaAutocomplete settings=settings id="textarea" class="materialize-textarea" placeholder="What's on your mind?"}}
+                                                  {{/textareaAutocomplete}}
+                                                </div>
+                                      </div>
+                                      <div class="row">
+                                                <div style="width:30%;float:left;float: left; margin-top: -14%; background-color: #337ab7; z-index: 10;display:none;" id="emoticon_id">
+                                        {{#each emoticons}}
+                                                <img src="{{image}}" style="max-width:20px;z-index:100;" class="image_emoticons" >
+                                        {{/each}}
+                                                </div>
+                                                <div class="col s12 m6 share-icons">
+                                                  <a href=""><i class="mdi-image-camera-alt"></i></a>
+                                                  <a href=""><i class="mdi-action-account-circle"></i></a>
+                                                  <a href=""><i class="mdi-hardware-keyboard-alt" id="emot_show"></i></a>
+                                                  <a href=""><i class="mdi-communication-location-on"></i></a>
+                                                </div>
+                                                <div class="col s12 m6 right-align">
+                                                    <a class="dropdown-button btn" style="background-color:#337ab7;" href="" data-activates="profilePost"><i class="mdi-action-language"></i> Public</a>
+                                                    <ul id="profilePost" class="dropdown-content">
+                                                      <li><a href=""><i class="mdi-action-language"></i> Public</a></li>
+                                                      <li><a href=""><i class="mdi-action-face-unlock"></i> Friends</a></li>
+                                                      <li><a href=""><i class="mdi-action-lock-outline"></i> Only Me</a></li>
+                                                    </ul>
+                                                    <a class="waves-effect waves-light btn post_profile" style="background-color:#337ab7;"><i class="mdi-maps-rate-review left"></i>Post</a>
+                                                </div>
+                                      </div>
+</div>
+</template>

@@ -1,0 +1,36 @@
+<template name="everypost">
+<div class="card card-inverse card-primary text-xs-center" style="width:100%;float:left">
+     <div class="card-block">
+<div id="" style="margin-top:1%;background-color:#FCFCFC;padding:10px;">
+                                                <div style="word-wrap:break-word;font-size:15px;">
+						 <div style="font-size:10px;"><a href="/user/{{this.answer_user._id}}">
+						{{#if this.answer_user_image}}
+                                                <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.answer_user_image.url store='thumbs'}}">
+						{{/if}}
+                                                {{this.answer_user.username}}</a>
+                                                </div>
+                                                {{#if is_answered.count}}
+                                                {{#if currentUser}}
+                                                 <div style="margin-top:5%;display:none;" id="anser{{formatId _id}}">
+                                                        <form>
+                                                        {{>editor}}
+                                                        <input type="submit" class="edit_content_answer" style="height:10%;width:20%;" name="Submit" value="Update">
+                                                        </form>
+                                                </div>
+                                                <div style="float:right;">
+                                                        <button class="answer_edit {{_id}} edit_answer" id="answer_edit{{_id}}" style="background-color:beige;"><i class="fa fa-pencil-square-o"></i></button>
+                                                </div>
+						 <div style="float:right;">
+                                                                       <small class=" text-muted" style="font-size:8px;"><span class="glyphicon glyphicon-time"></span>{{formatDate created_at}}</small>
+                                                </div>
+                                                {{/if}}
+                                                {{/if}}
+                                                <div id="edit_content_ans{{_id}}">
+                                                 {{{parseEmoticons text}}}
+                                                </div>
+                                                </div>
+                                                {{>answer_voting}}
+</div>
+</div>
+</div>
+</template>

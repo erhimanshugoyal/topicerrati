@@ -39,3 +39,6 @@ reactive-var
 materialize:materialize
 rajit:bootstrap3-datepicker
 jeremy:geocomplete
+mattimo:emoticons
+mizzao:autocomplete
+mrt:chosen-package

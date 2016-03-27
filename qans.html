@@ -17,6 +17,24 @@
 	  {{> rightrecent}}
 	</body>
 	-->
+	<!--<template name="change_password">
+	{{#if currentUser}}
+		<div style="float:left;margin-top:8%;width:75%;margin-left:25%;">
+		<form>
+		<h4>Change Password</h4>
+		<div style="width:30%;float:left">
+		Old Password<input type="password" name="old_password">
+		New Password<input type="password" name="new_password">
+		Confirm New Password<input type="password" name="confirm_new_password">
+		 <input type="submit" class="btn btn-success" value="Change Password" >
+		</div>
+		</form>
+		</div>
+	{{/if}}
+	</template>-->
+	<template name="userPill">
+		<span class="label {{labelClass}}" style="color:black;">{{username}}</span>
+	</template>
 	<template name="main">
 	      {{>question}}
 	      {{> yield}}
@@ -65,21 +83,23 @@
 			    <ul class="chat">
 				{{#each chat_messages}}
 				{{#if whoisboss}}
-				<li class="right clearfix"><span class="chat-img pull-right">
-				    <img src="{{../user_image.url}}" alt="User Avatar" class="img-circle" style="border-radius:5px;max-width:50px;max-height:50px;"/>
-				</span>
+				<li class="right clearfix" style="width:100%;">
 				    <div class="chat-body clearfix">
 					<div class="header">
 					    <small class=" text-muted" style="font-size:8px;"><span class="glyphicon glyphicon-time"></span>{{formatDate created_at}}</small>
 					    <strong class="pull-right primary-font"></strong>
 					</div>
-					<p style="word-wrap:break-word;">
-					{{message}}
+					<p style="word-wrap:break-word;padding:10px;background-color:#5cb85c;width:100%;border-top-right-radius:30px;border-bottom-right-radius:30px;border-top-left-radius:30px;border-bottom-left-radius:30px;color:white;">
+					{{{parseEmoticons message}}}
 					</p>
 				    </div>
+				   <span class="chat-img pull-right">
+                                    <img src="{{../user_image.url}}" alt="User Avatar" class="img-circle" style="border-radius:5px;max-width:50px;max-height:50px;"/>
+                                </span>
+
 				</li>
 				{{else}}
-				<li class="left clearfix"><span class="chat-img pull-left">
+				<li class="left clearfix" style="width:100%;"><span class="chat-img pull-left">
 				    <img src="{{../tab_user_image.url}}" alt="User Avatar" class="img-circle" style="border-radius:5px;max-width:50px;max-height:50px;"/>
 				</span>
 				    <div class="chat-body clearfix">
@@ -87,8 +107,8 @@
 					    <strong class="primary-font"></strong> <small class="pull-right text-muted" style="font-size:8px;">
 						<span class="glyphicon glyphicon-time"></span>{{formatDate created_at}}</small>
 					</div>
-					<p style="word-wrap:break-word;">
-					{{message}}
+					<p style="word-wrap:break-word;padding:10px;background-color:pink;width:100%;border-top-left-radius:30px;border-bottom-left-radius:30px;border-top-right-radius:30px;border-bottom-right-radius:30px;color:white;">
+					{{{parseEmoticons message}}}
 					</p>
 				    </div>
 				</li>
@@ -139,18 +159,61 @@
 	<template name="home">
 	      {{>rightrecent}}
 	      <div style="float:left;margin-top:8%;margin-left:25%;width:75%;">
-	      {{# each ques}}
+		<!--Tbas for questions and posts-->
+		<div class="panel panel-default" style="width: 74%;; padding: 10px; margin: 10px">
+		<div id="Tabs" role="tabpanel">
+	        <!-- Nav tabs -->
+        		<ul class="nav nav-tabs" role="tablist">
+		            <li class="active"><a href="#question" aria-controls="question" role="tab" data-toggle="tab">
+                		Question/Answers</a></li>
+		            <li><a href="#post" aria-controls="post" role="tab" data-toggle="tab">Posts</a></li>
+		        </ul>
+	        <!-- Tab panes -->
+        		<div class="tab-content" style="padding-top: 20px">
+		            <div role="tabpanel" class="tab-pane active" id="question">
+		  	          	{{# each ques}}
+				              {{> everyq}}
+		            		  {{/each }}
+				   {{#if moreResults}}
+                   		 <div id="showMoreResults">
+		                        <span class="loading" style="background-color:beige;margin-left: 49%;border-radius:1px;border: 2px solid #f7f7f7;">Loading...</span>
+                		    </div>
+			        {{/if}}
+
+			    </div>
+		            <div role="tabpanel" class="tab-pane" id="post">
+			   <!--POst from home page-->
+				{{>postuser}}		
+				
+			  <!--ending homepage post-->
+            		   <!--Writing code for posts-->
+				   {{#each posts}}
+					{{>everypost}}
+                        	   {{else}}
+
+                       		   {{/each}}
+
+
+			   <!-- Ending code for posts -->
+			   </div>
+		        </div>
+		    </div>
+		</div>
+
+		<!--End Tbas-->
+<!--	      {{# each ques}}
 	      {{> everyq}}
-	      {{/each }}
+	      {{/each }}-->
 	      </div>
 		{{#if currentUser}}
 		{{>chat}}
 		{{/if}}
+		<!--
 		{{#if moreResults}}
 		    <div id="showMoreResults">
 			<span class="loading" style="background-color:beige;margin-left: 49%;border-radius:1px;border: 2px solid #f7f7f7;">Loading...</span>
 		    </div>
-	{{/if}}
+	{{/if}}-->
 </template>
 
 
@@ -192,7 +255,7 @@
                          {{#if this.answer_user_image}}
                         <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.answer_user_image.url store='thumbs'}}">
                         {{/if}}
-                        {{this.answer_user.username}} :</a></b> {{{text}}}
+                        {{this.answer_user.username}} :</a></b> {{{parseEmoticons text}}}
 
 			{{>answer_voting}}
 			</div>
@@ -227,7 +290,7 @@
                         <input  style="color: transparent;position:absolute;float:left;z-index:1;" type="file" class="myCoverInput"  alt="Submit" width="48" height="48">
                         {{/if}}
 		      {{#each coverfiles}}
-                          <img src="{{url store="cover"}}"  alt="profile image" style="max-height:200px;">
+                          <img src="{{url store="cover"}}"  alt="profile image" style="max-height:250px;">
                         {{/each}}
                     <!--<img class="" src="http://demo.geekslabs.com/materialize/v2.1/layout01/images/user-profile-bg.jpg" alt="user background">                    -->
                 </div>
@@ -547,19 +610,28 @@
                     <div id="UpdateStatus" class="tab-content col s12  grey lighten-4">
                       <div class="row">
                         <div class="col s2">
-                          <img src="./Profile Page _ Materialize - Material Design Admin Template_files/avatar.jpg" alt="" class="circle responsive-img valign profile-image-post">
+			{{#each files}}
+                          <img src="{{url store="small"}}" alt="" class="circle responsive-img valign profile-image-post">
+			{{/each}}
                         </div>
                         <div class="input-field col s10">
-                          <textarea id="textarea" row="2" class="materialize-textarea"></textarea>
-                          <label for="textarea" class="">What's on your mind?</label>
+			  {{#textareaAutocomplete settings=settings id="textarea" class="materialize-textarea" placeholder="What's on your mind?"}}
+			  {{/textareaAutocomplete}}
+                          <!--<textarea id="textarea" row="2" class="materialize-textarea"></textarea>
+                          <label for="textarea" class="">What's on your mind?</label>-->
                         </div>
                       </div>
                       <div class="row">
+			<div style="width:30%;float:left;float: left; margin-top: -14%; background-color: #337ab7; z-index: 10;display:none;" id="emoticon_id">
+			{{#each emoticons}}
+				<img src="{{image}}" style="max-width:20px;z-index:100;" class="image_emoticons" >
+			{{/each}}
+			</div>
                         <div class="col s12 m6 share-icons">
-                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-image-camera-alt"></i></a>
-                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-action-account-circle"></i></a>
-                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-hardware-keyboard-alt"></i></a>
-                          <a href="http://demo.geekslabs.com/materialize/v2.1/layout01/user-profile-page.html#"><i class="mdi-communication-location-on"></i></a>
+                          <a href=""><i class="mdi-image-camera-alt"></i></a>
+                          <a href=""><i class="mdi-action-account-circle"></i></a>
+                          <a href=""><i class="mdi-hardware-keyboard-alt" id="emot_show"></i></a>
+                          <a href=""><i class="mdi-communication-location-on"></i></a>
                         </div>
                         <div class="col s12 m6 right-align">
                             <a class="dropdown-button btn" style="background-color:#337ab7;" href="" data-activates="profilePost"><i class="mdi-action-language"></i> Public</a>
@@ -568,9 +640,6 @@
                               <li><a href=""><i class="mdi-action-face-unlock"></i> Friends</a></li>                              
                               <li><a href=""><i class="mdi-action-lock-outline"></i> Only Me</a></li>
                             </ul>
-
-                            
-
                             <a class="waves-effect waves-light btn post_profile" style="background-color:#337ab7;"><i class="mdi-maps-rate-review left"></i>Post</a>
                         </div>
                       </div>
@@ -677,7 +746,7 @@
                 {{/if}}
                 {{/if}}
                 <div id="edit_content_ans{{_id}}">
-                 {{{ans}}}
+                 {{{parseEmoticons ans}}}
                 </div>
                 </div>
                 <div style="font-size:10px;"><a href="/user/{{this.answer_user._id}}">
@@ -691,24 +760,44 @@
 
                 {{/each}}
 			-->
-		
-
+				{{#if checkstatus}}
+				{{else}}
+				<div style="font-size:14px;padding:10px;"> Question : <b><a style="font-size:18px;" href="/question/{{this.question.unique_q_id}}">{{this.question.text}}</a></b></div>
+		                <div style="font-size:10px;padding:10px;"><a href="/user/{{this.question_user._id}}">
+                		{{#if this.question_user_image}}
+		                <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.question_user_image.url store='thumbs'}}">
+                		{{/if}}
+		                {{this.question_user.username}}</a></div>	
+				{{/if}}
+				{{#if checkstatus}}
+                                {{else}}				
+				<div class="row">
+                            		<div class="col s12">
+		                                <p>{{{parseEmoticons ans}}}</p>
+                		            </div>
+	                          </div>
+				{{/if}}
+				<!--
                               <p class="grey-text text-darken-4 margin">{{this.answer_user.username}}</p>
                               <span class="grey-text text-darken-1 ultra-small">{{formatDate this.created_at}}</span>
+				-->
+				<div style="font-size:10px;padding:10px;"><a href="/user/{{this.answer_user._id}}">
+                                {{#if this.answer_user_image}}
+                                <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.answer_user_image.url store='thumbs'}}">
+                                {{/if}}
+                                {{this.answer_user.username}}</a></div>
                             </div>
                             <div class="col s1 right-align">
                               <i class="mdi-navigation-expand-more"></i>
                             </div>
                           </div>
+			  {{#if checkstatus}}
                           <div class="row">
                             <div class="col s12">
-				{{#if checkstatus}}
-				<p>{{{text}}}</p>
-				{{else}}
-                              	<p>{{{ans}}}</p>
-				{{/if}}
+                              	<p>{{{parseEmoticons text}}}</p>
                             </div>
                           </div>
+			  {{/if}}
                         </div>
 			<!--Use THis whwn albums uploaded
                         <div class="card-image profile-medium">                          
@@ -1098,12 +1187,12 @@
 					{{#each notification}}
 					    <a class="content" href="#">
 					       <div class="notification-item"><img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.notify_user_image.url}}" />
-						{{#if this.is_topic}}
-									<p class="item-heading">{{this.notify_user.username}}  followed your topic ·{{formatDate created_at}}</p>
+						{{#if isTopicFollow is_type}}			
+						<p class="item-heading"><a href="/topic/{{this.notify_id}}">{{this.notify_user.username}}  followed your topic ·{{formatDate created_at}}</a></p>
 
 						{{else}}
 							{{#if this.is_userfollow}}
-						                             <p class="item-heading">{{this.notify_user.username}}  followed you {{formatDate created_at}} Follow Back to chat</p>
+						                             <p class="item-heading"><a href="/user/{{this.notify_user._id}}">{{this.notify_user.username}}  followed you {{formatDate created_at}} Follow Back to chat</a></p>
 							{{/if}}
 						{{/if}}
 <!--        <p class="item-info">Marketing 101, Video Assignment</p>-->
@@ -1295,7 +1384,7 @@
 					
 					<!-- more menu -->
 					<ul class="menu">
-						<li><a style="text-decoration:none;color:white;" href="#">Change Password</a></li>
+						<li><a id="change_password_link" style="text-decoration:none;color:white;">Change Password</a></li>
 						<li><a id="edit_prof" style="text-decoration:none;color:white;">Edit</a></li>
 						<li><a id="log_out" style="text-decoration:none;color:white;">Log out</a></li>
 					</ul>
@@ -1517,7 +1606,7 @@
 </div>
 </template>
 <template name="everyq">
-<div class="card card-inverse card-primary text-xs-center" style="width:75%;float:left">
+<div class="card card-inverse card-primary text-xs-center" style="width:100%;float:left">
      <div class="card-block">
 	<div id="quest{{_id}}" style="margin-top:2%;">
 	<div class="" style="">
@@ -1581,7 +1670,7 @@
 			 <div style="margin-top:5%;display:none;" id="anser{{formatId _id}}">
 		                <form>
                 		{{>editeditor}}
-		                <input type="submit" class="edit_content_answer" style="height:10%;width:20%;" name="Submit" value="Update Answer">
+		                <input type="submit" class="edit_content_answer" style="height:10%;width:20%;" name="Submit" value="Update">
                 		</form>
 	                </div>
 
@@ -1591,7 +1680,7 @@
 		{{/if}}
 		{{/if}}
 		<div id="edit_content_ans{{_id}}">
-		 {{{ans}}}
+		 {{{parseEmoticons ans}}}
 		</div>
 		</div>
 		<div style="font-size:10px;"><a href="/user/{{this.answer_user._id}}">
@@ -1647,7 +1736,7 @@
 			<div style="margin:5%;background: none repeat scroll 0% 0% #F6F6F6;border: 1px solid #E2E2E2;border-radius: 2px;margin-top:0%;">
 			{{#each this.commentsmulti}}
 	                <div style="padding: 20px 20px;margin-left:5%">
-        	        <div style="word-wrap:break-word;font-size:13px;"> <b>Comment :</b> {{{comment}}}</div>
+        	        <div style="word-wrap:break-word;font-size:13px;"> <b>Comment :</b> {{{parseEmoticons comment}}}</div>
 			<div style="font-size:10px;">
 			 <a href="/user/{{this.comment_user._id}}">
 			 {{#if this.comment_user_image}}
@@ -1683,7 +1772,7 @@
 			 {{#if this.reply_user_image}}
 	                <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.reply_user_image.url store='thumbs'}}">
         	        {{/if}}
-			{{this.reply_user.username}} :</a></b> {{{reply}}}</div>
+			{{this.reply_user.username}} :</a></b> {{{parseEmoticons reply}}}</div>
 			</div>
 			{{else}}
 			{{/each}}
@@ -1707,10 +1796,10 @@
 			</div>
 </template>
 <template name="editor">
-<div id="dat_{{_id}}" style="z-index:100000;">{{{text}}}</div>
+<div id="dat_{{_id}}" style="z-index:100000;">{{{parseEmoticons text}}}</div>
 </template>
 <template name="editeditor">
-<div id="dat_{{_id}}" style="z-index:100000;">{{{ans}}}</div>
+<div id="dat_{{_id}}" style="z-index:100000;">{{{parseEmoticons ans}}}</div>
 </template>
 <template name="quill_editor">
 <div id="editor-container-{{_id}}">
@@ -1819,6 +1908,7 @@
                                                         <label class="control-label col-sm-3" for="newTopic">New Topic</label>
                                                         <div class="col-sm-9">
                                                                 <input type="input" class="form-control" id="modal_newTopic_topic" placeholder="Enter topic" required>
+								{{> inputAutocomplete settings=settings id="tag_people_div" class="input-xlarge" placeholder="Enter people you want it to discuss it with...."}}
                                                                 {{#with usernameError}}
                                                                         <span class="help-block">{{this}}</span>
                                                                 {{/with}}
