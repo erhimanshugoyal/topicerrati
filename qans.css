@@ -2352,3 +2352,7 @@ footer.page-footer {
       font-size: 0.8rem;
   }
 }
+input[type=checkbox]
+{
+  -webkit-appearance:checkbox;
+}

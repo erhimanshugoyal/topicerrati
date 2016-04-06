@@ -36,6 +36,7 @@
 		<span class="label {{labelClass}}" style="color:black;">{{username}}</span>
 	</template>
 	<template name="main">
+		
 	      {{>question}}
 	      {{> yield}}
 		 {{#if currentUser}}
@@ -219,7 +220,7 @@
 
 <template name="questionPage">
 	{{>rightrecent}}
-	<div style="float:left;margin-top:8%;width:75%;margin-left:25%;">
+	<div style="float:left;margin-top:8%;width:55%;margin-left:25%;">
 	{{>everyq}}
 	</div>
 	{{#if currentUser}}
@@ -228,7 +229,13 @@
 </template>
 <template name="topic">
 	<div style="width:100%">
-	<div style="float:left;width:20%;margin-top:7%;margin-left:5%;">
+	<div style="float:left;width:20%;margin-top:10%;margin-left:5%;">
+			{{#each files}}
+                          <img src="{{url}}"  alt="topic image" class="circle z-depth-2 responsive-img" style="margin-left:-8%;">
+                        {{/each}}
+                        {{#if legaluser}}
+                        <input  style="color: transparent;margin-top:10%;margin-left:10%;" type="file" class="myFileInput"  alt="Submit" width="48" height="48">
+                        {{/if}}
 		<h3>{{title}}</h3>
 		{{#if legaluser}}
 		{{else}}
@@ -305,7 +312,7 @@
                 </figure>
                 <div class="card-content">
                   <div class="row">                    
-                    <div class="col s3 offset-s2">                        
+                    <div class="col s3 offset-s1" style="margin-top:3%;">                        
                         <h4 class="card-title grey-text text-darken-4" contenteditable="false" id="user_name">{{username}}</h4>
                         <!--<p class="medium-small grey-text">Project Manager</p>                      
 			 {{#if currentUser}}
@@ -325,14 +332,21 @@
 		    {{#if currentUser}}
                     {{#if legaluser}}
                      {{else}}
-                    <div class="col s3">
+                    <div class="col s3" style="width:25%;margin-left:-5%;">
 			{{#if this.is_followed}}
-			<button id="follow{{_id}}" class="card-title btn follow" style="border-radius: 60%;width: 32%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;">Unfollow</button>
+			<button id="follow{{_id}}" class="card-title btn follow" style="border-radius: 7%;width: 50%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;">Unfollow</button>
 			{{else}}
-                                <button id="follow{{_id}}" class="card-title btn follow" style="border-radius: 60%;width: 32%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;">Follow</button>
+                                <button id="follow{{_id}}" class="card-title btn follow" style="border-radius: 7%;width: 50%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;">Follow</button>
                                 {{/if}}
                     </div>
 			{{/if}}
+		      <div class="col s3" style="width:25%;margin-left:-5%;">
+                        <button id="" class="card-title btn" style="border-radius: 7%;width: 50%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;"><p style="padding:0px;margin:0px;">Followers</p><p style="padding:0px;margin:0px;margin-top:-40%;font-size:25px;"><i class="mdi-social-group-add"></i> {{this.followers.count}}</p></button>
+                    </div>
+			 <div class="col s3" style="width:25%;margin-left:-5%;">
+                        <button id="" class="card-title btn" style="border-radius: 7%;width: 50%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;"><p style="padding:0px;margin:0px;">Score</p><p style="padding:0px;margin:0px;margin-top:-40%;font-size:25px;"><i class="mdi-social-group-add"></i> {{this.followers.count}}</p></button>
+                    </div>
+			<!--
 			<div style="margin-top:3%;">
 			<div class="col s3 card amber darken-2">
 		                  <div class="card-content white-text center-align">
@@ -341,6 +355,7 @@
                 		  </div>                  
 	                </div>
 			</div>
+			-->
 			{{/if}}                    
                   </div>
                 </div>
@@ -420,14 +435,14 @@
                 </ul>
                 <!--/ Profile About Details  -->
 
-                <!-- Profile About  -->
+                <!-- Profile About  
                 <div class="card amber darken-2">
                   <div class="card-content white-text center-align">
                     <p class="card-title"><i class="mdi-social-group-add"></i> 3685</p>
                     <p>Followers</p>
                   </div>                  
                 </div>
-                <!-- Profile About  -->
+                 Profile About  -->
 
                 <!-- Profile feed  -->
 		<!--
@@ -1084,7 +1099,9 @@
 
     </div>
     <!-- END WRAPPER -->
-
+		 {{#if currentUser}}
+                {{>chat}}
+                {{/if}}
 
 </template>
 
@@ -1537,7 +1554,7 @@
 							</div>
 						</div>
 						
-						<div class="form-group">
+					<!--	<div class="form-group">
 							<div class="col-sm-offset-3 col-sm-9">
 								<div class="checkbox">
 									<label>
@@ -1546,7 +1563,7 @@
 								</div>
 							</div>
 						</div>
-						
+					-->	
 						<div class="form-group">
 							<div class="col-sm-offset-3 col-sm-9">
 								<input type="submit" class="btn btn-success" value="Create account" disabled="{{isAnythingWrong}}">
@@ -1569,7 +1586,11 @@
 <template name="question">
 
 <div  style="float:left;width:100%;position:fixed;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
-	<div style="float:left;width:18%;margin-left:5%;color:white"><h3><a style="color:white;" href="/">Topicerrati</a></h3>
+	<div style="float:left;width:18%;margin-left:5%;color:white">
+		<h3><a style="color:white;" href="/">Topicerrati
+<!--		<img src="http://www.topicerrati.com/cfs/files/images/8h2Jbs9Pna67GTWsf/Topicerrati.png?" style="width: 71px; min-width: 212px; max-height: 71px; margin-left: -13%;">-->
+		</a>
+		</h3>
 		<div>Question Everything</div>
 	</div>
 	<div style="float:left;width:50%;margin-top:1%;border-radius:25px;margin-right:10%;">

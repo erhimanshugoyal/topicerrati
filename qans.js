@@ -46,7 +46,7 @@ Images = new FS.Collection("images", {
 new FS.Store.FileSystem("cover", { transformWrite: createCover }),
 new FS.Store.FileSystem("thumbs", { transformWrite: createThumb }),
 new FS.Store.FileSystem("small", { transformWrite: createSmall }),
-new FS.Store.FileSystem("images", {path: "~/uploads"})],
+new FS.Store.FileSystem("images", {path: "/home/karan/uploads"})],
 filter: {
     allow: {
       contentTypes: ['image/*'] //allow only images in this FS.Collection
@@ -55,6 +55,7 @@ filter: {
 
 });
 if (Meteor.isClient) {
+
 
   Meteor.startup(function() {
   GoogleMaps.load({
@@ -516,7 +517,25 @@ Template.topic.events({
                 div_id = '#reply_comment' + this._id;
                 $(div_id).addClass('reply_comment');
                 $(div_id).removeClass('reply_comment_hide');
-                }
+                },
+
+		 'change .myFileInput': function(event, template) {
+	var topicid = this._id
+       FS.Utility.eachFile(event, function(file) {
+        var fileObj = new FS.File(file);
+//      Meteor.call("upload_profile_pic",fileObj)
+        if (typeof TopicList.findOne({_id: topicid}).topic_image_id !== 'undefined'){
+                Images.remove({_id: TopicList.findOne({_id: topicid}).topic_image_id})
+        }
+
+        Images.insert(file, function (err, fileObj) {
+        // Inserted new doc with ID fileObj._id, and kicked off the data upload using HTTP
+                Session.set('uploadedfileId', fileObj._id);
+                Meteor.call("upload_topic_pic",topicid,fileObj._id)
+        });
+    });
+
+  },
 
 });
 
@@ -756,8 +775,9 @@ var templateName = 'modal_signIn'
 			return !(Session.equals(usernameErrorKey , "") &&
 						Session.equals(emailErrorKey    , "") &&
 						Session.equals(password0ErrorKey, "") &&
-						Session.equals(password1ErrorKey, "") &&
-						Session.equals(acceptsUserAgreementKey, true))
+						Session.equals(password1ErrorKey, "")
+						//Session.equals(acceptsUserAgreementKey, true)
+						)
 		}
 	})
 	
@@ -1254,6 +1274,13 @@ Template.chat.legaluser = function(){
                 return false
         }
 }
+Template.topic.files = function () {
+//              alert(this._id);
+        if (typeof this._id !== 'undefined'){
+        return Images.find({_id: TopicList.findOne({_id: this._id}).topic_image_id});
+        }
+};
+
 Template.topic.legaluser = function(){
         if(this.u_id == Meteor.userId()) {
                 return true
@@ -1918,11 +1945,73 @@ Router.configure({
 });
 Router.route('/login');
 Router.route('/', {
-    template: 'home'
+    name: 'home',
+    template: 'home',
+     onAfterAction: function() {
+      // The SEO object is only available on the client.
+      // Return if you define your routes on the server, too.
+      if (!Meteor.isClient) {
+        //return;
+      }
+      SEO.config({
+        title: "Topicerrati.com - Question and Quantify Everything",
+        meta: {
+          'description': "Social Network where we question and quantify everything"
+        },
+        og: {
+          'title': "Topicerrati.com - Question and Quantify Everything",
+          'description': "Social Network where we question and quantify everything"
+        }
+      });
+    }
+
 });
+
+/*
 Router.route('/change_password', {
-    template: 'change_password'
+    template: 'change_password',
+     onAfterAction: function() {
+      // The SEO object is only available on the client.
+      // Return if you define your routes on the server, too.
+      SEO.set({
+        title: 'Topicerrati : Change Password ',
+        meta: {
+          'description': 'Change password for topicerrati'
+        },
+        og: {
+          'title': 'Change Password',
+          'description': 'Chnage Password for topicerrati'
+        }
+      });
+    }
+
 });
+*/
+Router.map(function() {
+  return this.route('change_password', {
+    path: '/change_password',
+    template: 'change_password',
+    onAfterAction: function() {
+      // The SEO object is only available on the client.
+      // Return if you define your routes on the server, too.
+      if (!Meteor.isClient) {
+        //return;
+      }
+      SEO.config({
+        title: "Change Password at Topicerrati.com",
+        meta: {
+          'description': "Change Password at Topicerrati.com"
+        },
+        og: {
+          'title': "Change Password at Topicerrati.com",
+          'description': "Change Password at Topicerrati.com"
+        }
+      });
+    }
+  });
+});
+
+
 Router.route('/question/:_id', {
     template: 'questionPage',
     data: function(){
@@ -2004,7 +2093,32 @@ Router.route('/question/:_id', {
 	return doc
 	}
 });
+    },
+
+ onAfterAction: function() {
+      // The SEO object is only available on the client.
+      // Return if you define your routes on the server, too.
+      if (!Meteor.isClient) {
+        //return;
+      }
+        var q_id = this.params._id
+        dat = QuestionsList.findOne({unique_q_id:q_id})
+	console.log(dat)
+        if (typeof dat !== 'undefined'){
+      SEO.config({
+        title: "Question: " + dat.text + " at Topicerrati.com",
+        meta: {
+          'description': "Question: " + dat.text +  " at Topicerrati.com"
+        },
+        og: {
+          'title':  "Question: " + dat.text + " at Topicerrati.com",
+          'description': "Question: " + dat.text +  " at Topicerrati.com"
+        }
+      });
+        }
     }
+
+
 });
 Router.route('/user/:_id', {
     template: 'userprofile',
@@ -2069,7 +2183,38 @@ Router.route('/user/:_id', {
 			return doc			}})}
 			return doc			}})}
 			return doc			}})
-			return doc		}})}});
+			return doc		}})},
+
+	onAfterAction: function() {
+      // The SEO object is only available on the client.
+      // Return if you define your routes on the server, too.
+      if (!Meteor.isClient) {
+        //return;
+      }
+        var q_id = this.params._id
+        dat = Meteor.users.findOne({_id:q_id})
+        image =  Images.findOne({_id: Meteor.users.findOne({_id: q_id}).profile.image_id});
+	if (typeof image !== 'undefined'){
+	image_url = image.url
+	}else{
+	image_url = "/cfs/files/images/8h2Jbs9Pna67GTWsf/Topicerrati.png"
+	}
+        if (typeof dat !== 'undefined'){
+      SEO.config({
+        title: "User: " + dat.username + " at Topicerrati.com",
+        meta: {
+          'description': "User: " + dat.username +  " at Topicerrati.com"
+        },
+        og: {
+          'title':  "User: " + dat.username + " at Topicerrati.com",
+          'description': "User: " + dat.username +  " at Topicerrati.com",
+	  'image' : image_url
+        }
+      });
+        }
+    }
+
+});
 Router.route('/topic/:_id', {
     template: 'topic',
     data: function(){ var q_id = this.params._id;
@@ -2115,7 +2260,41 @@ Router.route('/topic/:_id', {
                 doc.is_followed = FollowList.findOne({following_topic_ids:doc._id, u_id:Meteor.userId()})
                 return doc
 }})
-}});
+},
+ onAfterAction: function() {
+      // The SEO object is only available on the client.
+      // Return if you define your routes on the server, too.
+      if (!Meteor.isClient) {
+        //return;
+      }
+	var q_id = this.params._id
+	dat = TopicList.findOne({unique_q_id:q_id})
+	if (typeof TopicList.findOne({_id: q_id}).topic_image_id !== 'undefined'){
+	 image =  Images.findOne({_id: TopicList.findOne({_id: q_id}).topic_image_id});
+	}
+        if (typeof image !== 'undefined'){
+        image_url = image.url
+        }else{
+        image_url = "/cfs/files/images/8h2Jbs9Pna67GTWsf/Topicerrati.png"
+        }
+
+	if (typeof dat !== 'undefined'){
+      SEO.config({
+        title: dat.title + " at Topicerrati.com",
+        meta: {
+          'description': "Discuss " + dat.title +  " at Topicerrati.com"
+        },
+        og: {
+          'title': dat.title + " at Topicerrati.com",
+          'description': "Discuss " + dat.title +  " at Topicerrati.com",
+	  'image': image_url
+        }
+      });
+	}
+    }
+
+});
+
 
 Meteor.methods({
 addChat: function (hash) {
@@ -2144,6 +2323,10 @@ upload_profile_pic: function (fileObj_id) {
 },
 upload_cover_pic: function (fileObj_id) {
                 Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.cover_image_id": fileObj_id}})
+
+},
+upload_topic_pic: function (topicid,fileObj_id) {
+                TopicList.update({_id:topicid}, {$set:{"topic_image_id": fileObj_id}})
 
 },
 userfollow: function(q_id) {
@@ -2612,5 +2795,6 @@ userfollow: function(q_id) {
 	},
 	 update_user_profile: function(hash){
         Meteor.users.update({_id:Meteor.userId()}, {$set:hash})
-        }	
+        }
+
 });
