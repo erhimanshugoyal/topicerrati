@@ -2000,7 +2000,7 @@ Router.route('/', {
       if (!Meteor.isClient) {
         //return;
       }
-      SEO.set({
+      SEO.config({
         title: "Topicerrati.com - Question and Quantify Everything",
         meta: {
           'description': "Social Network where we question and quantify everything"
@@ -2035,7 +2035,7 @@ Router.route('/change_password', {
      onAfterAction: function() {
       // The SEO object is only available on the client.
       // Return if you define your routes on the server, too.
-      SEO.set({
+      SEO.config({
         title: 'Topicerrati : Change Password ',
         meta: {
           'description': 'Change password for topicerrati'
@@ -2059,7 +2059,7 @@ Router.map(function() {
       if (!Meteor.isClient) {
         //return;
       }
-      SEO.set({
+      SEO.config({
         title: "Change Password at Topicerrati.com",
         meta: {
           'description': "Change Password at Topicerrati.com"
@@ -2171,7 +2171,7 @@ Router.route('/question/:_id', {
         var q_id = this.params._id
         dat = QuestionsList.findOne({unique_q_id:q_id})
         if (typeof dat !== 'undefined'){
-      SEO.set({
+      SEO.config({
         title: "Question: " + dat.text + " at Topicerrati.com",
         meta: {
           'description': "Question: " + dat.text +  " at Topicerrati.com"
@@ -2272,7 +2272,7 @@ Router.route('/user/:_id', {
 	image_url = "http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share"
 	}
         if (typeof dat !== 'undefined'){
-      SEO.set({
+      SEO.config({
         title: "User: " + dat.username + " at Topicerrati.com",
         meta: {
           'description': "User: " + dat.username +  " at Topicerrati.com"
@@ -2365,7 +2365,7 @@ Router.route('/topic/:_id', {
         image_url = "http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share"
         }
 	if (typeof dat !== 'undefined'){
-      SEO.set({
+      SEO.config({
         title: dat.title + " at Topicerrati.com",
         meta: {
           'description': "Discuss " + dat.title +  " at Topicerrati.com"
