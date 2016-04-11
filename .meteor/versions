@@ -57,6 +57,8 @@ es5-shim@4.1.14
 facebook@1.2.2
 fastclick@1.0.7
 fortawesome:fontawesome@4.5.0
+gadicohen:robots-txt@0.0.10
+gadicohen:sitemaps@0.0.24
 geojson-utils@1.0.4
 google@1.1.7
 hot-code-push@1.0.0
@@ -73,6 +75,7 @@ iron:middleware-stack@1.0.11
 iron:router@1.0.12
 iron:url@1.0.11
 jeremy:geocomplete@1.6.5_12
+joshowens:shareit@1.0.1
 jquery@1.11.4
 launch-screen@1.0.4
 less@2.5.1
@@ -125,6 +128,7 @@ session@1.1.1
 sha@1.0.4
 spacebars@1.0.7
 spacebars-compiler@1.0.7
+spiderable@1.0.9
 srp@1.0.4
 standard-minifiers@1.0.2
 summernote:standalone@0.8.1

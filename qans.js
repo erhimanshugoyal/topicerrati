@@ -28,6 +28,13 @@ TopicsIndex = new EasySearch.Index({
 //        tranform: null
 })
 });
+
+var shareImage = function(fileObj, readStream, writeStream) {
+  // Transform the image into a 10x10px thumbnail
+  gm(readStream, fileObj.name()).resize('1400', '700').stream().pipe(writeStream);
+};
+
+
 var createCover = function(fileObj, readStream, writeStream) {
   // Transform the image into a 10x10px thumbnail
   gm(readStream, fileObj.name()).resize('1050', '250').stream().pipe(writeStream);
@@ -43,6 +50,7 @@ var createThumb = function(fileObj, readStream, writeStream) {
 };
 Images = new FS.Collection("images", {
   stores: [
+new FS.Store.FileSystem("share", { transformWrite: shareImage }),
 new FS.Store.FileSystem("cover", { transformWrite: createCover }),
 new FS.Store.FileSystem("thumbs", { transformWrite: createThumb }),
 new FS.Store.FileSystem("small", { transformWrite: createSmall }),
@@ -55,6 +63,26 @@ filter: {
 
 });
 if (Meteor.isClient) {
+
+
+         ShareIt.configure({
+    sites: {                // nested object for extra configurations
+        'facebook': {
+            'appId': 807503276021457   // use sharer.php when it's null, otherwise use share dialog
+        },
+        'twitter': {},
+        'googleplus': {},
+        'pinterest': {}
+    },
+    classes: "large btn", // string (default: 'large btn')
+                          // The classes that will be placed on the sharing buttons, bootstrap by default.
+    iconOnly: true,      // boolean (default: false)
+                          // Don't put text on the sharing buttons
+    applyColors: true,     // boolean (default: true)
+                          // apply classes to inherit each social networks background color
+    faSize: '',            // font awesome size
+    faClass: ''       // font awesome classes like square
+  });
 
 
   Meteor.startup(function() {
@@ -347,6 +375,10 @@ Template.userprofile.checkstatus = function () {
 		return false;
 	}
 }
+Template.questionPage.shareData =  function(){
+	return { title: this.text, description:'Question ' + this.text + ' at Topicerrati.com', image:'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png'}
+}
+
 Template.questionPage.rendered = function(){
 	QuestionsIndex.getComponentMethods().search("")
 }
@@ -367,8 +399,8 @@ Template.inputAutocomplete.events({
 	},
 
 	'keypress input.input-xlarge': function (evt, template) {
-		console.log(evt)
-		console.log(template)	
+		//console.log(evt)
+		//console.log(template)	
 	}
 })
 
@@ -436,7 +468,7 @@ Template[templateName].events({
                         event.preventDefault()
 			var topic = template.find('#modal_newTopic_topic').value			
 			var unique_q_id = topic.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-")	
-				alert($('#tag_people_div').val())
+				//alert($('#tag_people_div').val())
 				hash ={'topic':topic,'unique_q_id':unique_q_id}	
 				Meteor.call("topic_create",hash, function(error,result){
 				Modal.hide()
@@ -960,7 +992,7 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
  Template.answer_voting.events({
     'click .add_comment': function(event){
         event.preventDefault();
-	console.log("cppment onsertion called")
+	//console.log("cppment onsertion called")
         var div_id = '#comment_' + this._id;
         var comment = UniHTML.purify($(div_id).val());
 	Meteor.call("comment_insert",this._id,comment)	
@@ -972,7 +1004,7 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
  Template.comment_reply.events({
     'click .add_reply': function(event){
         event.preventDefault();
-	console.log("reply onsertion called")
+	//console.log("reply onsertion called")
 	var div_id = '#commentreply_' + this._id;
         var commentreply = UniHTML.purify($(div_id).val());
 	Meteor.call("reply_insert",this._id,commentreply)	
@@ -1015,6 +1047,21 @@ var data = Template.currentData(self.view);
 //...
 });
 });
+
+
+Template.topic.shareData =  function(){
+	 q_id = TopicList.findOne({unique_q_id: this.unique_q_id})
+        if (typeof TopicList.findOne({unique_q_id: q_id}) !== 'undefined' && typeof TopicList.findOne({unique_q_id: q_id}).topic_image_id !== 'undefined'){
+         image =  Images.findOne({_id: TopicList.findOne({unique_q_id: q_id}).topic_image_id});
+        }
+        if (typeof image !== 'undefined'){
+        image_url = "http://topicerrati.com" + image.url().substring(0,image.url().lastIndexOf("?")) + '?store=share'
+        }else{
+        image_url = "http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share"
+        }
+
+	return { title: this.title, description: 'Discuss '+  this.title + ' at Topicerrati.com', image:image_url}
+}
 
 Template.topic.rendered = function(){
 	$(document).ready(function() {
@@ -1753,7 +1800,6 @@ Template.chat.events({
                 }
 		,
 	'click .answer_edit': function () {
-		alert("Hey stop clicking me")
                 div_id = '#anser' + this._id;
                 $(div_id).show();
                 div_id = '#answer_edit' + this._id;
@@ -1830,6 +1876,7 @@ Template.chat.events({
   
 }
 if (Meteor.isServer) {
+
 	Meteor.startup(function () {
   UploadServer.init({
     tmpDir: process.env.PWD + '/.uploads/tmp',
@@ -1953,17 +2000,32 @@ Router.route('/', {
       if (!Meteor.isClient) {
         //return;
       }
-      SEO.config({
+      SEO.set({
         title: "Topicerrati.com - Question and Quantify Everything",
         meta: {
           'description': "Social Network where we question and quantify everything"
         },
         og: {
           'title': "Topicerrati.com - Question and Quantify Everything",
-          'description': "Social Network where we question and quantify everything"
+          'description': "Social Network where we question and quantify everything",
+	  'image': 'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png',
+	  'image:width':'200',
+          'image:height':'200',
+	   'image:type':'image/png',
+           'image:url': 'http://www.topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png'
+
         }
+	      ,
+           fb: {
+                'app_id':'807503276021457'
+          }
       });
+    },
+    action : function () {
+    if (this.ready()) {
+        this.render();
     }
+}
 
 });
 
@@ -1997,7 +2059,7 @@ Router.map(function() {
       if (!Meteor.isClient) {
         //return;
       }
-      SEO.config({
+      SEO.set({
         title: "Change Password at Topicerrati.com",
         meta: {
           'description': "Change Password at Topicerrati.com"
@@ -2007,7 +2069,12 @@ Router.map(function() {
           'description': "Change Password at Topicerrati.com"
         }
       });
+    },
+    action : function () {
+    if (this.ready()) {
+        this.render();
     }
+}
   });
 });
 
@@ -2103,20 +2170,25 @@ Router.route('/question/:_id', {
       }
         var q_id = this.params._id
         dat = QuestionsList.findOne({unique_q_id:q_id})
-	console.log(dat)
         if (typeof dat !== 'undefined'){
-      SEO.config({
+      SEO.set({
         title: "Question: " + dat.text + " at Topicerrati.com",
         meta: {
           'description': "Question: " + dat.text +  " at Topicerrati.com"
         },
         og: {
           'title':  "Question: " + dat.text + " at Topicerrati.com",
-          'description': "Question: " + dat.text +  " at Topicerrati.com"
+          'description': "Question: " + dat.text +  " at Topicerrati.com",
+	  'image': 'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share'
         }
       });
         }
+    },
+  action : function () {
+    if (this.ready()) {
+        this.render();
     }
+}
 
 
 });
@@ -2195,12 +2267,12 @@ Router.route('/user/:_id', {
         dat = Meteor.users.findOne({_id:q_id})
         image =  Images.findOne({_id: Meteor.users.findOne({_id: q_id}).profile.image_id});
 	if (typeof image !== 'undefined'){
-	image_url = image.url
+	image_url = "http://topicerrati.com" + image.url().substring(0,image.url().lastIndexOf("?")) + '?store=share';
 	}else{
-	image_url = "/cfs/files/images/8h2Jbs9Pna67GTWsf/Topicerrati.png"
+	image_url = "http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share"
 	}
         if (typeof dat !== 'undefined'){
-      SEO.config({
+      SEO.set({
         title: "User: " + dat.username + " at Topicerrati.com",
         meta: {
           'description': "User: " + dat.username +  " at Topicerrati.com"
@@ -2208,11 +2280,25 @@ Router.route('/user/:_id', {
         og: {
           'title':  "User: " + dat.username + " at Topicerrati.com",
           'description': "User: " + dat.username +  " at Topicerrati.com",
-	  'image' : image_url
+	  'image' : 'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share',
+	  'image:width':'200',
+          'image:height':'200',
+	   'image:type':'image/png',
+           'image:url': 'http://www.topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share'
+
         }
+	      ,
+           fb: {
+                'app_id':'807503276021457'
+          }
       });
         }
+    },
+   action : function () {
+    if (this.ready()) {
+        this.render();
     }
+}
 
 });
 Router.route('/topic/:_id', {
@@ -2268,18 +2354,18 @@ Router.route('/topic/:_id', {
         //return;
       }
 	var q_id = this.params._id
+	//console.log(q_id)
 	dat = TopicList.findOne({unique_q_id:q_id})
-	if (typeof TopicList.findOne({_id: q_id}).topic_image_id !== 'undefined'){
-	 image =  Images.findOne({_id: TopicList.findOne({_id: q_id}).topic_image_id});
+	if (typeof TopicList.findOne({unique_q_id: q_id}) !== 'undefined' && typeof TopicList.findOne({unique_q_id: q_id}).topic_image_id !== 'undefined'){
+	 image =  Images.findOne({_id: TopicList.findOne({unique_q_id: q_id}).topic_image_id});
 	}
         if (typeof image !== 'undefined'){
-        image_url = image.url
-        }else{
-        image_url = "/cfs/files/images/8h2Jbs9Pna67GTWsf/Topicerrati.png"
+        image_url = "http://topicerrati.com" + image.url().substring(0,image.url().lastIndexOf("?")) + '?store=share'
+	}else{
+        image_url = "http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share"
         }
-
 	if (typeof dat !== 'undefined'){
-      SEO.config({
+      SEO.set({
         title: dat.title + " at Topicerrati.com",
         meta: {
           'description': "Discuss " + dat.title +  " at Topicerrati.com"
@@ -2287,11 +2373,25 @@ Router.route('/topic/:_id', {
         og: {
           'title': dat.title + " at Topicerrati.com",
           'description': "Discuss " + dat.title +  " at Topicerrati.com",
-	  'image': image_url
+	  'image': image_url,
+	  'image:width':'200',
+          'image:height':'200',
+	 'image:type':'image/png',
+         'image:url': image_url
+
         }
+	      ,
+           fb: {
+                'app_id':'807503276021457'
+          }
       });
 	}
+    },
+	action : function () {
+    if (this.ready()) {
+        this.render();
     }
+}
 
 });
 
@@ -2515,7 +2615,7 @@ userfollow: function(q_id) {
 	},
 	comment_insert: function(q_id,comment) {
 	thiselement = AnswersList.findOne({_id:q_id})	
-	console.log(thiselement)
+	//console.log(thiselement)
 	if (typeof thiselement.topic_id == 'undefined'){
 	console.log("m here")
 	var q_id = thiselement._id;
@@ -2572,7 +2672,7 @@ userfollow: function(q_id) {
 	},
 
 	reply_insert: function(q_id,commentreply) {
-	console.log(q_id)
+	//console.log(q_id)
 	thiselement = CommentsList.findOne({_id:q_id})
 	console.log(thiselement)
 	 var q_id = thiselement._id;
@@ -2787,8 +2887,6 @@ userfollow: function(q_id) {
 	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.occupation": '',"profile.skills": '',"profile.bio": '',"profile.birthdate": '',"profile.location": ''}})
 	},
 	update_user_profile: function(text,attr){
-	console.log(attr)
-	console.log(text)
 	var attr = JSON.stringify(attr)
 	var text = JSON.stringify(text)
 	Meteor.users.update({_id:Meteor.userId()}, {$set:{attr:text}})
