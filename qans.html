@@ -1,4 +1,6 @@
 <head>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:fb="http://ogp.me/ns/fb#">
 <meta property="og:type"   content="website" />
 <meta property="fb:app_id" content="807503276021457" />
 <meta name="fragment" content="!">
@@ -237,7 +239,6 @@
 	{{>rightrecent}}
 	<div style="float:left;margin-top:8%;width:55%;margin-left:25%;">
 	{{>everyq}}
-	{{>shareit shareData}}
 	</div>
 	{{#if currentUser}}
         {{>chat}}
@@ -281,7 +282,7 @@
                         <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.answer_user_image.url store='thumbs'}}">
                         {{/if}}
                         {{this.answer_user.username}} :</a></b> {{{parseEmoticons text}}}
-
+			{{>shareit shareData}}
 			{{>answer_voting}}
 			</div>
 		     </div>
@@ -332,6 +333,11 @@
                   <div class="row">                    
                     <div class="col s3 offset-s1" style="margin-top:3%;">                        
                         <h4 class="card-title grey-text text-darken-4" contenteditable="false" id="user_name">{{username}}</h4>
+			{{#if currentUser}}
+                    {{#if legaluser}}
+			<i class="fa fa-pencil-square-o fa-2" id="edit_username" style="margin-left:1%;"></i>
+			{{/if}}
+			{{/if}}
                         <!--<p class="medium-small grey-text">Project Manager</p>                      
 			 {{#if currentUser}}
                                 {{#if legaluser}}
@@ -364,6 +370,9 @@
 			 <div class="col s3" style="width:25%;margin-left:-5%;">
                         <button id="" class="card-title btn" style="border-radius: 7%;width: 50%;height: 72px;font-size: 12px;background-color:#337ab7;color:white;margin-top:10%;outline:none;"><p style="padding:0px;margin:0px;">Score</p><p style="padding:0px;margin:0px;margin-top:-40%;font-size:25px;"><i class="mdi-social-group-add"></i> {{this.followers.count}}</p></button>
                     </div>
+			<div style="margin-top:4%;">
+			{{>shareit shareData}}
+			</div>
 			<!--
 			<div style="margin-top:3%;">
 			<div class="col s3 card amber darken-2">
@@ -1650,12 +1659,19 @@
 	<div id="quest{{_id}}" style="margin-top:2%;">
 	<div class="" style="">
 <!--Make a link here to every question, that would open up on a new page-->
-		<div style="font-size:18px;padding:10px;"> Question : <b><a href="/question/{{unique_q_id}}">{{text}}</a></b></div>
+		<div style="font-size:18px;padding:10px;"> Question : <b><a href="/question/{{unique_q_id}}">{{text}}</a></b>
+		{{#if questionAsked}}
+		{{#if currentUser}}
+		<i class="delete_question fa fa-trash-o fa-2" id="delete_q" style="float:right;"></i>
+		{{/if}}
+		{{/if}}
+		</div>
 		<div style="font-size:10px;padding:10px;"><a href="/user/{{this.question_user._id}}">
 		{{#if this.question_user_image}}
                 <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.question_user_image.url store='thumbs'}}">
                 {{/if}}
 		{{this.question_user.username}}</a></div>
+		{{>shareit shareData}}
 		<div style="margin-left:1%;margin-top:1%;float:left;width:98%;background-color: #F1F1F1;">
 			{{#if this.is_answered.count}}
 			 <!--<div style="float:left;width:20%">
@@ -1712,7 +1728,6 @@
 		                <input type="submit" class="edit_content_answer" style="height:10%;width:20%;" name="Submit" value="Update">
                 		</form>
 	                </div>
-
 			<div style="float:right;">
                         <button class="answer_edit {{_id}} edit_answer" id="answer_edit{{_id}}" style="background-color:beige;"><i class="fa fa-pencil-square-o"></i></button>
                         </div>	
@@ -1727,6 +1742,7 @@
                 <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.answer_user_image.url store='thumbs'}}">
                 {{/if}}
 {{this.answer_user.username}}</a></div>
+                {{>shareit shareData}}
                 {{>answer_voting}}
                 </div>
                 {{else}}

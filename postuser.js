@@ -37,6 +37,10 @@ Template.postuser.events({
                         return
                 }
                 hash = {topic_id:q_id,text:post_topic,is_status:1}
+		  if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+       		 }
                 Meteor.call("create_topic_post",hash, function (error, result) {
                         $('#textarea').val('');
                 })

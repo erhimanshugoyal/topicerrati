@@ -6,11 +6,11 @@ Meteor.startup(function() {
                 'description': 'Social Network where we question and quantify everything'
             },
             og: {
-               'image': 'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share',
+               'image': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png',
 		'image:width':'200',
 		'image:height':'200',
 		'image:type':'image/png',
-		'image:url': 'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share'
+		'image:url': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
            }
 		,
 	   fb: {

@@ -91,7 +91,10 @@ Template[templateName].events({
                 },
 		
 		 'click #submit_user_change_pasword': function(event, template){
-
+			  if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
                         event.preventDefault
 			var oldPassword = $('#old_password').val()
                         var newPassword = Session.get(confirmnewpasswordKey)

@@ -31,7 +31,7 @@ TopicsIndex = new EasySearch.Index({
 
 var shareImage = function(fileObj, readStream, writeStream) {
   // Transform the image into a 10x10px thumbnail
-  gm(readStream, fileObj.name()).resize('1400', '700').stream().pipe(writeStream);
+  gm(readStream, fileObj.name()).resize('200', '200').stream().pipe(writeStream);
 };
 
 
@@ -48,8 +48,23 @@ var createThumb = function(fileObj, readStream, writeStream) {
   // Transform the image into a 10x10px thumbnail
   gm(readStream, fileObj.name()).resize('50', '50').stream().pipe(writeStream);
 };
+
+var imageStore = new FS.Store.S3("shares3", {
+  region: "ap-southeast-1", //optional in most cases
+  accessKeyId: "AKIAJC43GYK6YIFMV5XQ", //required if environment variables are not set
+  secretAccessKey: "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", //required if environment variables are not set
+  bucket: "topicerrati", //required
+//  ACL: "myValue", //optional, default is 'private', but you can allow public or secure access routed through your app URL
+  folder: "share", //optional, which folder (key prefix) in the bucket to use 
+  // The rest are generic store options supported by all storage adapters
+  transformWrite: shareImage, //optional
+ // transformRead: myTransformReadFunction, //optional
+  maxTries: 1 //optional, default 5
+});
+
 Images = new FS.Collection("images", {
   stores: [
+	imageStore,
 new FS.Store.FileSystem("share", { transformWrite: shareImage }),
 new FS.Store.FileSystem("cover", { transformWrite: createCover }),
 new FS.Store.FileSystem("thumbs", { transformWrite: createThumb }),
@@ -70,7 +85,7 @@ if (Meteor.isClient) {
         'facebook': {
             'appId': 807503276021457   // use sharer.php when it's null, otherwise use share dialog
         },
-        'twitter': {},
+       // 'twitter': {},
         'googleplus': {},
         'pinterest': {}
     },
@@ -80,7 +95,7 @@ if (Meteor.isClient) {
                           // Don't put text on the sharing buttons
     applyColors: true,     // boolean (default: true)
                           // apply classes to inherit each social networks background color
-    faSize: '',            // font awesome size
+    faSize: '2',            // font awesome size
     faClass: ''       // font awesome classes like square
   });
 
@@ -212,7 +227,9 @@ Template.userprofile.events({
                         $('#textarea').val('');
                 })
         },
-
+  'click #edit_username': function () {
+	Modal.show("prompt_username")  
+},
   'click #edit_name': function () {
 	$('#user_name').attr('contenteditable','true')
 	$('#user_name').focus()
@@ -245,6 +262,10 @@ Template.userprofile.events({
    'blur #user_name': function () {
 	var text = $('#user_name').html()
 	$('#user_name').html('');
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.users.update({_id:Meteor.userId()}, {$set:{"username": text}})	
 //	$('#user_name').html(text);  
 	$('#user_name').attr('contenteditable','false')
@@ -253,6 +274,10 @@ Template.userprofile.events({
   'blur #user_occupation': function () {
 	var text = $('#user_occupation').html()
 	$('#user_occupation').html('')
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("update_user_profile",{"profile.occupation": text},function(error,result){
 	})
 //	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.occupation": text}})
@@ -263,6 +288,10 @@ Template.userprofile.events({
 'blur #user_bio': function () {
 	var bio = $('#user_bio').html()
 	$('#user_bio').html('');
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("update_user_profile",{"profile.bio": bio},function(error,result){
 	})
 	//Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.bio": bio}})
@@ -272,6 +301,10 @@ Template.userprofile.events({
 'blur #user_interest': function () {
 	var interest = $('#user_interest').html()
 	$('#user_interest').html('')
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("update_user_profile",{"profile.interest": interest})
 //	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.interest": interest}})
 //	$('#user_interest').html(interest)
@@ -280,6 +313,10 @@ Template.userprofile.events({
 'blur #user_skills': function () {
         var skills = $('#user_skills').html()
         $('#user_skills').html('')
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("update_user_profile",{"profile.skills": skills})
 //        Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.skills": skills}})
 //      $('#user_interest').html(interest)
@@ -288,6 +325,11 @@ Template.userprofile.events({
 'blur #user_location': function () {
         var locations = $('#user_location').val()
         //$('#user_location').val('')
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+
 	Meteor.call("update_user_profile",{"profile.location": locations})  
   //    Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.location": locations}})
 //      $('#user_interest').html(interest)
@@ -296,6 +338,10 @@ Template.userprofile.events({
 'blur #user_birthdate': function () {
         var birthdate = $('#user_birthdate').val()
         //$('#user_birthdate').val('')
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("update_user_profile",{"profile.birthdate": birthdate})
 //        Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.birthdate": birthdate}})
 //      $('#user_interest').html(interest)
@@ -303,6 +349,10 @@ Template.userprofile.events({
   },
    'click .follow': function () {
 	q_id = this._id
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	 Meteor.call("userfollow",this._id, function(error, result) {
 		if (result.unfollow){
                 div_id = '#follow' + q_id;
@@ -375,8 +425,35 @@ Template.userprofile.checkstatus = function () {
 		return false;
 	}
 }
-Template.questionPage.shareData =  function(){
-	return { title: this.text, description:'Question ' + this.text + ' at Topicerrati.com', image:'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png'}
+Template.everyq.questionAsked =  function(){
+if(this.user == Meteor.userId()){
+return true;
+}else{
+return false;
+}
+}
+Template.everyq.shareData =  function(){
+	if(typeof this.text !== 'undefined'){
+	if(typeof this.question_user_image !== 'undefined'){
+        image = this.question_user_image
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/" + image.copies.shares3.key
+        }else{
+        image_url = 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
+        }
+
+	return { title: this.text, description:'Question ' + this.text + ' at Topicerrati.com', image:image_url}
+		}
+	if(typeof this.ans !== 'undefined'){
+	if(typeof this.answer_user_image !== 'undefined'){
+	image = this.answer_user_image
+	image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/" + image.copies.shares3.key
+	}else{
+	image_url = 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
+	}
+	answer = this.ans.replace(/<\/?[^>]+(>|$)/g, "");
+        return { title: Template.parentData().text, description: this.answer_user.username +": " + answer + ' at Topicerrati.com ' , image:image_url}
+                }
+
 }
 
 Template.questionPage.rendered = function(){
@@ -487,6 +564,10 @@ Template[templateName].events({
 Template.topic.events({
 	'click .follow': function () {
         var q_id = this._id;
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("topicfollow",q_id, function (error, result) {
                 if (result.unfollow){
                 div_id = '#follow' + q_id;
@@ -510,6 +591,10 @@ Template.topic.events({
 			return
 		}
 		hash = {topic_id:q_id,text:post_topic}
+		 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 		Meteor.call("create_topic_post",hash, function (error, result) {
 			$('#summernote').summernote('reset');
 		})
@@ -580,7 +665,6 @@ var templateName = 'index'
 			var button = event.currentTarget
 			
 			var modalName = 'modal_'+button.getAttribute('data-modal')
-			
 			Modal.show(modalName)
 			
 		}
@@ -631,6 +715,12 @@ var templateName = 'modal_signIn'
 			            alert('error : '+err.message);
 			        } else {
 					Modal.hide()
+					if(typeof Meteor.users.findOne({_id:Meteor.userId()}).username == 'undefined'){
+                                	Meteor.setTimeout(function() {
+                               Modal.show("prompt_username")
+                                }, 3000);
+				}
+
 			        }
 			    });
 
@@ -641,6 +731,11 @@ var templateName = 'modal_signIn'
                 		throw new Meteor.Error("Facebook login failed");
 		            }else{
 				Modal.hide()
+				if(typeof Meteor.users.findOne({_id:Meteor.userId()}).username == 'undefined'){
+				Meteor.setTimeout(function() {
+         		       Modal.show("prompt_username")
+				}, 1000);
+				}
 				}
 			        });
 		    },	
@@ -904,7 +999,7 @@ Tracker.autorun(function () {
 
 Template.question.helpers({
   inputAttributes: function () {
-return { 'class': 'easy-search-input search_box', 'placeholder': 'Start searching...', 'id':'question_input' , 'required': 'true', 'name': 'search', 'autocomplete': 'off', 'style':'width:70%;color:white;'};
+return { 'class': 'easy-search-input search_box', 'placeholder': 'Start searching...', 'id':'question_input' , 'required': 'true', 'name': 'search', 'autocomplete': 'off', 'style':'width:70%;color:white;', 'minlength':15, 'maxlength':150};
 },
   questionsIndex: () => QuestionsIndex // instanceof EasySearch.Index
 });
@@ -918,6 +1013,10 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
  Template.question.events({
     'submit form': function(event){
 	event.preventDefault();
+	if(Meteor.userId() == null){
+		Modal.show("modal_signIn")
+		return
+	}
     	var question = event.target.search.value;
 	arr = ["what"," why"," where", "when" ,"how" ,"who"]
 	var unique_q_id = question.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-")
@@ -940,6 +1039,15 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 
 
  Template.everyq.events({
+    'click .delete_question':  function(event){
+	event.preventDefault();
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+
+	Meteor.call("delete_question",this._id)
+	},
     'click .add_answer': function(event){
         event.preventDefault();
 	var div_id = '#dat_' + this._id;
@@ -954,6 +1062,11 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 	var q_unique = this.unique_q_id
 	var q_user = this.user
 	var thiselement = jQuery.extend({}, this);
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+
 	Meteor.call("add_answer",q_id,answer, function (error, result){
 		if (result.edit){
 		div_id = '#anser' + q_id;
@@ -979,6 +1092,10 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
         //$(div_id).summernote('destroy');
 //      var answer = $(div_id).html().replace(/contenteditable=\"true\"/g,'')
 		q_id = this._id;
+		 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 		Meteor.call("edit_answer",q_id,answer,function(error,result){
 		 div_id = '#anser' + q_id;
                 $(div_id).hide();
@@ -995,6 +1112,10 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 	//console.log("cppment onsertion called")
         var div_id = '#comment_' + this._id;
         var comment = UniHTML.purify($(div_id).val());
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("comment_insert",this._id,comment)	
         div_id = '#comment' + this._id;
         $(div_id).hide();
@@ -1007,6 +1128,11 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 	//console.log("reply onsertion called")
 	var div_id = '#commentreply_' + this._id;
         var commentreply = UniHTML.purify($(div_id).val());
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+	
 	Meteor.call("reply_insert",this._id,commentreply)	
         div_id = '#commentreply_ans' + this._id;
 	
@@ -1050,17 +1176,30 @@ var data = Template.currentData(self.view);
 
 
 Template.topic.shareData =  function(){
+	if(typeof this.title !== 'undefined'){
 	 q_id = TopicList.findOne({unique_q_id: this.unique_q_id})
         if (typeof TopicList.findOne({unique_q_id: q_id}) !== 'undefined' && typeof TopicList.findOne({unique_q_id: q_id}).topic_image_id !== 'undefined'){
          image =  Images.findOne({_id: TopicList.findOne({unique_q_id: q_id}).topic_image_id});
         }
         if (typeof image !== 'undefined'){
-        image_url = "http://topicerrati.com" + image.url().substring(0,image.url().lastIndexOf("?")) + '?store=share'
-        }else{
-        image_url = "http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share"
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/" + image.copies.shares3.key
+	}else{
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png"
         }
 
 	return { title: this.title, description: 'Discuss '+  this.title + ' at Topicerrati.com', image:image_url}
+	}
+	
+	 if(typeof this.text !== 'undefined'){
+        if(typeof this.answer_user_image !== 'undefined'){
+        image = this.answer_user_image
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/" + image.copies.shares3.key
+        }else{
+        image_url = 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
+        }
+        return { title: Template.parentData().title, description:'' + this.answer_user.username +": " + $(this.text).text() + ' at Topicerrati.com ' , image:image_url}
+                }
+
 }
 
 Template.topic.rendered = function(){
@@ -1335,7 +1474,16 @@ Template.topic.legaluser = function(){
                 return false
         }
 }
-
+Template.userprofile.shareData =  function(){
+	q_id = this._id;	
+        image =  Images.findOne({_id: Meteor.users.findOne({_id: q_id}).profile.image_id});
+          if (typeof image !== 'undefined'){
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/" + image.copies.shares3.key
+        }else{
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/Topicerrati.png"
+        }
+        return { title: this.username, description: 'User '+  this.username + ' at Topicerrati.com', image:image_url}
+}
 Template.userprofile.legaluser = function(){
 	if(this._id == Meteor.userId()) {
 		return true
@@ -1350,7 +1498,7 @@ Template.userprofile.legalanswer = function(){
                 return false
         }
 }
-var ITEMS_INCREMENT = 5; 
+var ITEMS_INCREMENT = 3; 
 // whenever #showMoreResults becomes visible, retrieve more results
 function showMoreVisible() {
     var threshold, target = $("#showMoreResults");
@@ -1388,7 +1536,7 @@ Deps.autorun(function() {
 });
 
   Template.home.posts = function(){
- return AnswersList.find({is_status:1}, {sort: {created_at: -1},transform: function(doc){
+ return AnswersList.find({is_status:1}, {sort: {created_at: -1},limit: Session.get("itemsLimit"),transform: function(doc){
                         doc.countupVoteAnsObj = Votes.find({answer_id: doc._id,upvote:1})
                         doc.countdownVoteAnsObj = Votes.find({answer_id: doc._id,downvote:1})
                         doc.isupvotedans = Votes.find({answer_id: doc._id,upvote:1,u_id: Meteor.userId()})
@@ -1680,6 +1828,11 @@ Template.chat.events({
   Template.answer_voting.events({
         'click .upvote_ans': function () {
         var q_id = this._id;
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+
 	Meteor.call("upvote_answer", q_id, function (error,result) {
 		if (hash.upvoted) {
 			div_id = '#upvote_ans' + q_id;
@@ -1697,6 +1850,11 @@ Template.chat.events({
         },
 	   'click .downvoting_ans': function () {
         var q_id = this._id;
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+
 	Meteor.call("downvote_answer",q_id, function (error, result) {
 		if (hash.downvoted) {
 		div_id = '#downvote_ans' + q_id;
@@ -1714,6 +1872,10 @@ Template.chat.events({
 	//Comment Voting System
 		'click .upvote_comment': function () {
         var q_id = this._id;
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("upvote_comment",q_id, function(error, result){
 		if (result.upvoted){
 			div_id = '#upvote_comment' + q_id;
@@ -1730,6 +1892,10 @@ Template.chat.events({
         },
            'click .downvoting_comment': function () {
         var q_id = this._id;
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("downvote_comment",q_id,function (error,result){
 		if (result.downvoted){
 		div_id = '#downvote_comment' + q_id;
@@ -1751,6 +1917,10 @@ Template.chat.events({
   Template.everyq.events({
 	'click .upvote': function () {
 	var q_id = this._id;
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 	Meteor.call("upvote_question",q_id, function(error,result){
 		if (result.upvoted) {
 			 div_id = '#upvote' + q_id;
@@ -1768,6 +1938,11 @@ Template.chat.events({
 	},
 	    'click .downvoting': function () {
 	var q_id = this._id;
+	 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+
 	Meteor.call("downvote_question",q_id,function(error,result){
 		if (result.downvoted){
 			div_id = '#downvote' + q_id;
@@ -1784,6 +1959,10 @@ Template.chat.events({
 });
   Template.everyq.events({
         'click .answer': function () {
+		  if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
 		div_id = '#anser' + this._id;
 		$(div_id).show();
 		div_id = '#answer' + this._id;
@@ -1949,7 +2128,20 @@ if (Meteor.isServer) {
             return true;
           }
         });
-
+	   QuestionsList.allow({
+        	  'insert': function () {
+                // add custom authentication code here
+            return true;
+          },
+          'remove': function () {
+                // add custom authentication code here
+            return true;
+          },
+         'update': function () {
+                // add custom authentication code here
+            return true;
+	}
+        });
 ServiceConfiguration.configurations.remove({
   service: "google"
 });	
@@ -2008,11 +2200,11 @@ Router.route('/', {
         og: {
           'title': "Topicerrati.com - Question and Quantify Everything",
           'description': "Social Network where we question and quantify everything",
-	  'image': 'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png',
+	  'image': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png',
 	  'image:width':'200',
           'image:height':'200',
 	   'image:type':'image/png',
-           'image:url': 'http://www.topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png'
+           'image:url': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
 
         }
 	      ,
@@ -2083,6 +2275,11 @@ Router.route('/question/:_id', {
     template: 'questionPage',
     data: function(){
         var q_id = this.params._id;
+	var found = QuestionsList.findOne({ unique_q_id: q_id  })
+	if (typeof found == 'undefined'){
+		Router.go('/')
+		return	
+	}
 	return QuestionsList.findOne({ unique_q_id: q_id  },{
 	 transform: function(doc) {
 	 var index = 0;
@@ -2150,7 +2347,7 @@ Router.route('/question/:_id', {
         doc.downvotesObj = Votes.find({question_id: doc._id, downvote: 1})
         doc.isupvoted = Votes.find({question_id: doc._id, upvote: 1, u_id: Meteor.userId()})
         doc.isdownvoted = Votes.find({question_id: doc._id, downvote: 1, u_id: Meteor.userId()})
-        doc.is_answered = AnswersList.find({question_id: doc._id, u_id: Meteor.userId()})
+        doc.is_answered = AnswersList.find({question_id: doc._id, u_id: Meteor.userId()}).fetch()
 	  if (typeof doc.question_user !== 'undefined'){
 		if (typeof doc.question_user.profile !== 'undefined'){
         doc.question_user_image = Images.findOne({_id: doc.question_user.profile.image_id})
@@ -2179,7 +2376,7 @@ Router.route('/question/:_id', {
         og: {
           'title':  "Question: " + dat.text + " at Topicerrati.com",
           'description': "Question: " + dat.text +  " at Topicerrati.com",
-	  'image': 'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share'
+	  'image': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
         }
       });
         }
@@ -2266,11 +2463,11 @@ Router.route('/user/:_id', {
         var q_id = this.params._id
         dat = Meteor.users.findOne({_id:q_id})
         image =  Images.findOne({_id: Meteor.users.findOne({_id: q_id}).profile.image_id});
-	if (typeof image !== 'undefined'){
-	image_url = "http://topicerrati.com" + image.url().substring(0,image.url().lastIndexOf("?")) + '?store=share';
-	}else{
-	image_url = "http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share"
-	}
+	  if (typeof image !== 'undefined'){
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/" + image.copies.shares3.key
+        }else{
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/Topicerrati.png"
+        }
         if (typeof dat !== 'undefined'){
       SEO.config({
         title: "User: " + dat.username + " at Topicerrati.com",
@@ -2280,11 +2477,11 @@ Router.route('/user/:_id', {
         og: {
           'title':  "User: " + dat.username + " at Topicerrati.com",
           'description': "User: " + dat.username +  " at Topicerrati.com",
-	  'image' : 'http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share',
+	  'image' : 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png',
 	  'image:width':'200',
           'image:height':'200',
 	   'image:type':'image/png',
-           'image:url': 'http://www.topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share'
+           'image:url': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
 
         }
 	      ,
@@ -2360,9 +2557,9 @@ Router.route('/topic/:_id', {
 	 image =  Images.findOne({_id: TopicList.findOne({unique_q_id: q_id}).topic_image_id});
 	}
         if (typeof image !== 'undefined'){
-        image_url = "http://topicerrati.com" + image.url().substring(0,image.url().lastIndexOf("?")) + '?store=share'
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/" + image.copies.shares3.key
 	}else{
-        image_url = "http://topicerrati.com/cfs/files/images/4BDWq25drBKRHBupD/Topicerrati.png?store=share"
+        image_url = "https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png"
         }
 	if (typeof dat !== 'undefined'){
       SEO.config({
@@ -2617,7 +2814,6 @@ userfollow: function(q_id) {
 	thiselement = AnswersList.findOne({_id:q_id})	
 	//console.log(thiselement)
 	if (typeof thiselement.topic_id == 'undefined'){
-	console.log("m here")
 	var q_id = thiselement._id;
         var q_text = thiselement.ans;
         var q_date = thiselement.created_at
@@ -2674,7 +2870,6 @@ userfollow: function(q_id) {
 	reply_insert: function(q_id,commentreply) {
 	//console.log(q_id)
 	thiselement = CommentsList.findOne({_id:q_id})
-	console.log(thiselement)
 	 var q_id = thiselement._id;
         var q_answer_id = thiselement.answer_id;
         var q_date = thiselement.created_at
@@ -2893,6 +3088,12 @@ userfollow: function(q_id) {
 	},
 	 update_user_profile: function(hash){
         Meteor.users.update({_id:Meteor.userId()}, {$set:hash})
-        }
+        },
+	delete_question: function(obj){
+	 QuestionsList.remove(obj);
+	},
+	setusername: function(username){
+		Accounts.setUsername(Meteor.userId(), username)
+	}
 
 });

@@ -47,3 +47,5 @@ gadicohen:sitemaps
 materialize:materialize
 spiderable
 joshowens:shareit
+cfs:s3
+meteorhacks:fast-render
