@@ -95,7 +95,7 @@ if (Meteor.isClient) {
                           // Don't put text on the sharing buttons
     applyColors: true,     // boolean (default: true)
                           // apply classes to inherit each social networks background color
-    faSize: '2',            // font awesome size
+    faSize: '',            // font awesome size
     faClass: ''       // font awesome classes like square
   });
 
@@ -1006,7 +1006,7 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Start searchin
 
 Template.rightrecent.helpers({
   inputAttributes: function () {
-return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic...', 'id':'topic_input' , 'required': 'true', 'name': 'search_topic', 'autocomplete': 'off'};
+return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic...', 'id':'topic_input' , 'required': 'true', 'name': 'search_topic', 'autocomplete': 'off', 'action':''};
 },
   topicsIndex: () => TopicsIndex // instanceof EasySearch.Index
 });
@@ -1301,6 +1301,13 @@ Template.rightrecent.toptopic = function() {
 	return TopicList.find({},{limit:5, sort: {created_at: -1}})
 }
 
+Template.rightrecent.events({
+	'submit form': function(event, template){
+	event.preventDefault;
+		var keyw = $('#topic_input').val() 
+		Router.go('/search/'+keyw)
+		return false;
+}})
 
 
 Template.index.profilepic_dd = function() {
@@ -1577,6 +1584,7 @@ Deps.autorun(function() {
 
 
   Template.home.ques = function(){
+	console.log(new Date())
         return QuestionsList.find({}, {sort: {created_at: -1} , limit: Session.get("itemsLimit"), 
          transform: function(doc) {
         var index = 0;
@@ -1648,6 +1656,7 @@ Deps.autorun(function() {
 		}
 	}
         //alert(JSON.stringify(doc))
+	console.log(new Date())
         return doc
 }}
 )}
@@ -2183,6 +2192,35 @@ Router.configure({
     layoutTemplate: 'main'
 });
 Router.route('/login');
+Router.route('/search/:_keyword', {
+	name: 'searchPage',
+    template: 'searchPage',
+	data: function(){
+        var q_id = this.params._keyword + "*";
+	console.log(TopicIndex.search(q_id))
+	if (TopicList.find({title:{$regex:q_id}}).fetch().length !== 0){
+	return TopicList.find({title:{$regex:q_id}},{sort:{created_at:-1},
+		transform: function(doc) {
+                doc.topicanswers = AnswersList.find({topic_id:doc._id},{sort:{created_at:-1}})
+		doc.followers = FollowList.find({following_topic_ids:doc._id})
+                doc.is_followed = FollowList.findOne({following_topic_ids:doc._id, u_id:Meteor.userId()})
+		return doc
+		}})
+	}else
+	{
+	 return TopicList.find({},{sort:{created_at:-1},
+                transform: function(doc) {
+                doc.topicanswers = AnswersList.find({topic_id:doc._id},{sort:{created_at:-1}})
+                doc.followers = FollowList.find({following_topic_ids:doc._id})
+                doc.is_followed = FollowList.findOne({following_topic_ids:doc._id, u_id:Meteor.userId()})
+		return doc
+                }})
+
+	}
+	}
+	})
+
+
 Router.route('/', {
     name: 'home',
     template: 'home',

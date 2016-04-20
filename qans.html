@@ -1,4 +1,5 @@
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:fb="http://ogp.me/ns/fb#">
 <meta property="og:type"   content="website" />
@@ -55,7 +56,7 @@
 	      {{>question}}
 	      {{> yield}}
 		 {{#if currentUser}}
-		<div class="hidden-xs hidden-sm">
+		<div class="hidden-xs hidden-sm hide-on-small-only">
 		{{chat}}
 		</div>
 		{{/if}}
@@ -150,7 +151,7 @@
 	</div>
 	</template>
 	<template name="chat">
-	<div class="hidden-xs" style="float:left;position:fixed;margin-top:40%;margin-left:5%;width:16%;height:auto;border: 2px solid #f7f7f7;">
+	<div class="hidden-xs hide-on-small-only" style="float:left;position:fixed;margin-top:40%;margin-left:5%;width:16%;height:auto;border: 2px solid #f7f7f7;">
 	<div style="background-color:#337ab7;color:white;">Chat({{usersonline.count}})</div>
 	<div>
 	{{#each usersonline}}
@@ -175,16 +176,17 @@
 	</div>
 	</template>
 	<template name="home">
+	   <div class="hidden-xs hidden-sm hide-on-small-only">
 	      {{>rightrecent}}
-	      <div style="float:left;margin-top:8%;margin-left:25%;width:75%;">
+	   </div>
+	      <div class="col-lg-10" style="float:left;margin-top:8%;margin-left:25%;width:75%;">
 		<!--Tbas for questions and posts-->
-		<div class="panel panel-default" style="width: 74%;; padding: 10px; margin: 10px">
+		<div class="panel panel-default" style="width: 74%; padding: 10px; margin: 10px">
 		<div id="Tabs" role="tabpanel">
 	        <!-- Nav tabs -->
         		<ul class="nav nav-tabs" role="tablist">
 		            <li class="active"><a href="#question" aria-controls="question" role="tab" data-toggle="tab">
                 		Question/Answers</a></li>
-		            <li><a href="#post" aria-controls="post" role="tab" data-toggle="tab">Posts</a></li>
 		        </ul>
 	        <!-- Tab panes -->
         		<div class="tab-content" style="padding-top: 20px">
@@ -199,21 +201,6 @@
 			        {{/if}}
 
 			    </div>
-		            <div role="tabpanel" class="tab-pane" id="post">
-			   <!--POst from home page-->
-				{{>postuser}}		
-				
-			  <!--ending homepage post-->
-            		   <!--Writing code for posts-->
-				   {{#each posts}}
-					{{>everypost}}
-                        	   {{else}}
-
-                       		   {{/each}}
-
-
-			   <!-- Ending code for posts -->
-			   </div>
 		        </div>
 		    </div>
 		</div>
@@ -236,7 +223,9 @@
 
 
 <template name="questionPage">
+	<div class="hidden-xs hidden-sm hide-on-small-only">
 	{{>rightrecent}}
+	</div>
 	<div style="float:left;margin-top:8%;width:55%;margin-left:25%;">
 	{{>everyq}}
 	</div>
@@ -386,6 +375,7 @@
 			{{/if}}                    
                   </div>
                 </div>
+		<!--
                 <div class="card-reveal" style="display: none; transform: translateY(0px);">
                     <p>
                       <span class="card-title grey-text text-darken-4">Roger Waters <i class="mdi-navigation-close right"></i></span>
@@ -398,7 +388,7 @@
                     <p><i class="mdi-communication-email cyan-text text-darken-2"></i> mail@domain.com</p>
                     <p><i class="mdi-social-cake cyan-text text-darken-2"></i> 18th June 1990</p>
                     <p><i class="mdi-device-airplanemode-on cyan-text text-darken-2"></i> BAR - AUS</p>
-                </div>
+                </div>-->
             </div>
             <!--/ profile-page-header -->
 

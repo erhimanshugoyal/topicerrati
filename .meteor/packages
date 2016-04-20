@@ -23,7 +23,6 @@ themeteorites:quilljs
 vazco:universe-html-purifier
 easy:search
 peppelg:bootstrap-3-modal
-twbs:bootstrap
 tomi:upload-server
 tomi:upload-jquery
 cfs:standard-packages
@@ -49,3 +48,6 @@ spiderable
 joshowens:shareit
 cfs:s3
 meteorhacks:fast-render
+meteorhacks:kadira
+meteorhacks:kadira-debug
+twbs:bootstrap
