@@ -179,9 +179,9 @@
 	   <div class="hidden-xs hidden-sm hide-on-small-only">
 	      {{>rightrecent}}
 	   </div>
-	      <div class="col-lg-10" style="float:left;margin-top:8%;margin-left:25%;width:75%;">
+		<div class="col-lg-6 col-lg-offset-3 col-sm-12 col-xs-12" style="float:left;margin-top:8%;">
 		<!--Tbas for questions and posts-->
-		<div class="panel panel-default" style="width: 74%; padding: 10px; margin: 10px">
+		<div class="panel panel-default col-lg-12 col-sm-12 col-xs-12" style="padding: 10px; margin: 10px">
 		<div id="Tabs" role="tabpanel">
 	        <!-- Nav tabs -->
         		<ul class="nav nav-tabs" role="tablist">
@@ -1602,15 +1602,15 @@
 
 <template name="question">
 
-<div  style="float:left;width:100%;position:fixed;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
-	<div style="float:left;width:18%;margin-left:5%;color:white">
+<div class="col-sm-12 col-xs-12 col-lg-12" style="float:left;position:fixed;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
+	<div class="col-sm-1 cols-xs-1 col-lg-1" style="float:left;margin-left:5%;color:white">
 		<h3><a style="color:white;" href="/">Topicerrati
 <!--		<img src="http://www.topicerrati.com/cfs/files/images/8h2Jbs9Pna67GTWsf/Topicerrati.png?" style="width: 71px; min-width: 212px; max-height: 71px; margin-left: -13%;">-->
 		</a>
 		</h3>
 		<div>Question Everything</div>
 	</div>
-	<div style="float:left;width:50%;margin-top:1%;border-radius:25px;margin-right:10%;">
+	<div class="col-sm-6 col-xs-6 col-lg-6" style="float:left;margin-top:1%;border-radius:25px;margin-right:10%;">
 		<form style="height:80px;">
 		
 		 {{> EasySearch.Input index=questionsIndex attributes=inputAttributes}}
