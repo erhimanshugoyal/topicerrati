@@ -4,6 +4,11 @@ Notification = new Mongo.Collection('notifications')
 TopicList = new Mongo.Collection('topic');
 TopicAnswersList = new Mongo.Collection('topicanswers');
 ChatMessage = new Mongo.Collection('chatmessages');
+ArticleList = new Mongo.Collection('articles');
+Votes = new Mongo.Collection('votes');
+CommentsList = new Mongo.Collection('comments')
+ReplyComment = new Mongo.Collection('replycomments')
+
 QuestionsIndex = new EasySearch.Index({
   collection: QuestionsList,
   fields: ['text'],
@@ -78,8 +83,6 @@ filter: {
 
 });
 if (Meteor.isClient) {
-
-
          ShareIt.configure({
     sites: {                // nested object for extra configurations
         'facebook': {
@@ -121,6 +124,8 @@ if (Meteor.isClient) {
   Meteor.subscribe("topicanswers");
   Meteor.subscribe("chatmessages");
   Meteor.subscribe("notifications");
+  
+
  Template.registerHelper('formatId', function(data) {
   return (data && data._str) || data;
 });
@@ -1583,6 +1588,7 @@ Deps.autorun(function() {
                         return doc                      }})}
 
 
+
   Template.home.ques = function(){
 	console.log(new Date())
         return QuestionsList.find({}, {sort: {created_at: -1} , limit: Session.get("itemsLimit"), 
@@ -1660,6 +1666,41 @@ Deps.autorun(function() {
         return doc
 }}
 )}
+
+Template.topic.onCreated( function() {
+	Meteor.defer(function() {
+		 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }   
+	});
+});
+Template.home.onCreated( function() {
+        Meteor.defer(function() {
+                 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+        });
+});
+
+Template.questionPage.onCreated( function() {
+        Meteor.defer(function() {
+                 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+        });
+});
+
+Template.change_password.onCreated( function() {
+        Meteor.defer(function() {
+                 if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+        });
+});
 
 
 Template.chat.onCreated( function() {
@@ -2064,7 +2105,6 @@ Template.chat.events({
   
 }
 if (Meteor.isServer) {
-
 	Meteor.startup(function () {
   UploadServer.init({
     tmpDir: process.env.PWD + '/.uploads/tmp',
@@ -2109,7 +2149,6 @@ if (Meteor.isServer) {
 	Meteor.publish("notifications", function () {
                 return Notification.find();
         });
-
 	Images.allow({
  	 'insert': function () {
     		// add custom authentication code here
@@ -2127,18 +2166,29 @@ if (Meteor.isServer) {
    		 return true;
 	  }
 	});
-	 Meteor.users.allow({
-         'insert': function () {
+	 //Meteor.users.allow({
+        // 'insert': function () {
                 // add custom authentication code here
-            return true;
-          },
-          'update': function () {
+          //  return true;
+          //},
+         // 'update': function () {
                 // add custom authentication code here
-            return true;
-          }
-        });
-	   QuestionsList.allow({
-        	  'insert': function () {
+           // return true;
+          //}
+        //});
+	 //  QuestionsList.allow({
+        //	  'insert': function () {
+                // add custom authentication code here
+          //  return true;
+          //},
+         //'update': function () {
+                // add custom authentication code here
+           // return true;
+	//}
+       // });
+
+	  CommentsList.allow({
+                  'insert': function () {
                 // add custom authentication code here
             return true;
           },
@@ -2149,8 +2199,11 @@ if (Meteor.isServer) {
          'update': function () {
                 // add custom authentication code here
             return true;
-	}
+        }
         });
+
+
+
 ServiceConfiguration.configurations.remove({
   service: "google"
 });	
@@ -2184,9 +2237,6 @@ AnswersList = new Mongo.Collection('answers', {
 
 });
 //AnswersList = new Mongo.Collection('answers');
-Votes = new Mongo.Collection('votes');
-CommentsList = new Mongo.Collection('comments')
-ReplyComment = new Mongo.Collection('replycomments')
 
 Router.configure({
     layoutTemplate: 'main'
@@ -2315,8 +2365,8 @@ Router.route('/question/:_id', {
         var q_id = this.params._id;
 	var found = QuestionsList.findOne({ unique_q_id: q_id  })
 	if (typeof found == 'undefined'){
-		Router.go('/')
-		return	
+	//	Router.go('/')
+	//	return	
 	}
 	return QuestionsList.findOne({ unique_q_id: q_id  },{
 	 transform: function(doc) {
@@ -2539,6 +2589,7 @@ Router.route('/user/:_id', {
 Router.route('/topic/:_id', {
     template: 'topic',
     data: function(){ var q_id = this.params._id;
+		console.log(new Date())
         return TopicList.findOne({unique_q_id:q_id},{
 	 transform: function(doc) {
 		doc.topicanswers = AnswersList.find({topic_id:doc._id},{sort:{created_at:-1},
@@ -2579,6 +2630,7 @@ Router.route('/topic/:_id', {
                         return doc                      }})
                 doc.followers = FollowList.find({following_topic_ids:doc._id})
                 doc.is_followed = FollowList.findOne({following_topic_ids:doc._id, u_id:Meteor.userId()})
+		console.log(new Date())
                 return doc
 }})
 },
@@ -2623,8 +2675,12 @@ Router.route('/topic/:_id', {
 	}
     },
 	action : function () {
+	console.log("Actrion")
+	console.log(new Date())
     if (this.ready()) {
         this.render();
+	console.log("Actrion Rendered")
+        console.log(new Date())
     }
 }
 
@@ -2874,7 +2930,7 @@ userfollow: function(q_id) {
         Notification.insert({u_id:q_uid,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"comment",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
         });
 	}else{
-	 var q_id = thiselement._id;
+	var q_id = thiselement._id;
         var q_text = thiselement.text;
         var q_date = thiselement.created_at
         var q_uid = thiselement.u_id
@@ -2891,6 +2947,7 @@ userfollow: function(q_id) {
                 created_at: new Date(),
                 commentreply_ids: [],
     },  function(err,docsInserted){
+	console.log(err)
         q_comment_ids.push(docsInserted)
 	if (typeof thiselement.is_status !== 'undefined'){
         AnswersList.update({_id: q_id}, {text: q_text, comment_ids: q_comment_ids, created_at: q_date, u_id:q_uid, topic_id:q_qid, is_status: 1 })
