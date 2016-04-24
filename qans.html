@@ -1656,6 +1656,7 @@
 		{{/if}}
 		{{/if}}
 		</div>
+		{{#if nonhomepage}}
 		<div style="font-size:10px;padding:10px;"><a href="/user/{{this.question_user._id}}">
 		{{#if this.question_user_image}}
                 <img style="border-radius:5px;max-height:50px;max-width:50px;" src="{{this.question_user_image.url store='thumbs'}}">
@@ -1738,6 +1739,7 @@
                 {{else}}
 
                 {{/each}}
+		{{/if}}
 	</div>
 </div>
 </div>

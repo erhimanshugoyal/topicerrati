@@ -113,7 +113,7 @@ if (Meteor.isClient) {
   // counter starts at 0
   Session.setDefault('counter', 0);
 //  Meteor.subscribe("questions");
-  Meteor.subscribe("answers");
+ /* Meteor.subscribe("answers");
   Meteor.subscribe("comments");
   Meteor.subscribe("replycomments");
   Meteor.subscribe("users");
@@ -124,7 +124,7 @@ if (Meteor.isClient) {
   Meteor.subscribe("topicanswers");
   Meteor.subscribe("chatmessages");
   Meteor.subscribe("notifications");
-  
+  */
 
  Template.registerHelper('formatId', function(data) {
   return (data && data._str) || data;
@@ -151,7 +151,7 @@ Template.chat.usersonline = function(){
 	if (typeof array_followers !== 'undefined' && typeof _isfollowed !== 'undefined'){
 	var friends = _.intersection(array_followers.following_ids, array_isfollowed);
 	}
-	return Meteor.users.find({ $and: [{ "_id": { $ne: Meteor.userId() } },{ "_id": { $in: friends } },{ "status.online": true }]},{
+	return Meteor.users.find({ $and: [{ "_id": { $ne: Meteor.userId() } },{ "_id": { $in: friends } },{ "status.online": false }]},{
 	transform: function(doc) {
 	doc.unread_messages = ChatMessage.find({from:doc._id,to:Meteor.userId(),is_seen:0})
 	return doc
@@ -432,6 +432,13 @@ Template.userprofile.checkstatus = function () {
 }
 Template.everyq.questionAsked =  function(){
 if(this.user == Meteor.userId()){
+return true;
+}else{
+return false;
+}
+}
+Template.everyq.nonhomepage = function(){
+if (typeof this.is_answered !== 'undefined'){
 return true;
 }else{
 return false;
@@ -1510,7 +1517,7 @@ Template.userprofile.legalanswer = function(){
                 return false
         }
 }
-var ITEMS_INCREMENT = 3; 
+var ITEMS_INCREMENT = 10; 
 // whenever #showMoreResults becomes visible, retrieve more results
 function showMoreVisible() {
     var threshold, target = $("#showMoreResults");
@@ -1543,8 +1550,13 @@ Deps.autorun(function() {
   Meteor.subscribe("replycomments");
   Meteor.subscribe("users");
   Meteor.subscribe("votes");
-  Meteor.subscribe("notifications");
+  Meteor.subscribe("images");
+  Meteor.subscribe("follow");
+  Meteor.subscribe("topic");
+  Meteor.subscribe("topicanswers");
   Meteor.subscribe("chatmessages");
+  Meteor.subscribe("notifications");
+
 });
 
   Template.home.posts = function(){
@@ -1588,8 +1600,10 @@ Deps.autorun(function() {
                         return doc                      }})}
 
 
-
   Template.home.ques = function(){
+	return QuestionsList.find({}, {sort: {created_at: -1} , limit: Session.get("itemsLimit")})
+	}
+  Template.home.question = function(){
 	console.log(new Date())
         return QuestionsList.find({}, {sort: {created_at: -1} , limit: Session.get("itemsLimit"), 
          transform: function(doc) {
@@ -2176,7 +2190,7 @@ if (Meteor.isServer) {
            // return true;
           //}
         //});
-	 //  QuestionsList.allow({
+	   QuestionsList.allow({
         //	  'insert': function () {
                 // add custom authentication code here
           //  return true;
@@ -2184,8 +2198,8 @@ if (Meteor.isServer) {
          //'update': function () {
                 // add custom authentication code here
            // return true;
-	//}
-       // });
+	//},
+        });
 
 	  CommentsList.allow({
                   'insert': function () {
