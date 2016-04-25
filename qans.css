@@ -2356,3 +2356,9 @@ input[type=checkbox]
 {
   -webkit-appearance:checkbox;
 }
+
+@media (min-width: 767px) {
+.custom-chat-box{
+float:left;position:fixed;margin-top:40%;margin-left:5%;width:16%;height:auto;border: 2px solid #f7f7f7;
+}
+}

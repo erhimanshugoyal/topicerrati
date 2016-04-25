@@ -112,8 +112,9 @@ if (Meteor.isClient) {
  
   // counter starts at 0
   Session.setDefault('counter', 0);
-//  Meteor.subscribe("questions");
- /* Meteor.subscribe("answers");
+  Meteor.subscribe("users");
+/*  Meteor.subscribe("questions");
+  Meteor.subscribe("answers");
   Meteor.subscribe("comments");
   Meteor.subscribe("replycomments");
   Meteor.subscribe("users");
@@ -151,7 +152,7 @@ Template.chat.usersonline = function(){
 	if (typeof array_followers !== 'undefined' && typeof _isfollowed !== 'undefined'){
 	var friends = _.intersection(array_followers.following_ids, array_isfollowed);
 	}
-	return Meteor.users.find({ $and: [{ "_id": { $ne: Meteor.userId() } },{ "_id": { $in: friends } },{ "status.online": false }]},{
+	return Meteor.users.find({ $and: [{ "_id": { $ne: Meteor.userId() } },{ "_id": { $in: friends } }]},{
 	transform: function(doc) {
 	doc.unread_messages = ChatMessage.find({from:doc._id,to:Meteor.userId(),is_seen:0})
 	return doc
@@ -172,6 +173,16 @@ Template.userprofile.onRendered(function() {
 		      	$("#user_location").geocomplete();
 		    }
  		 });
+	 Meteor.subscribe("questions");
+	 Meteor.subscribe("answers");
+	  Meteor.subscribe("comments");
+	  Meteor.subscribe("replycomments");
+	  Meteor.subscribe("users");
+	  Meteor.subscribe("votes");
+	  Meteor.subscribe("images");
+	  Meteor.subscribe("follow");
+	  Meteor.subscribe("topic");
+
 });
 Template.userprofile.events({
   'click .image_emoticons' : function(event,template) {
@@ -470,9 +481,21 @@ Template.everyq.shareData =  function(){
 
 Template.questionPage.rendered = function(){
 	QuestionsIndex.getComponentMethods().search("")
+	Meteor.subscribe("questions");
+	 Meteor.subscribe("answers");
+	 Meteor.subscribe("comments");
+	 Meteor.subscribe("replycomments");
+ 	 Meteor.subscribe("users");
+ 	 Meteor.subscribe("votes");
+	 Meteor.subscribe("images");
 }
 Template.home.rendered = function(){
         QuestionsIndex.getComponentMethods().search("")
+	Meteor.subscribe('questions', Session.get('itemsLimit'));
+	Meteor.subscribe("users");
+	Meteor.subscribe("chatmessages");
+	Meteor.subscribe("images");
+	Meteor.subscribe("follow");
 }
 Template.rightrecent.rendered = function(){
         TopicsIndex.getComponentMethods().search("")
@@ -1215,6 +1238,15 @@ Template.topic.shareData =  function(){
 }
 
 Template.topic.rendered = function(){
+	 Meteor.subscribe("answers");
+	  Meteor.subscribe("comments");
+	  Meteor.subscribe("replycomments");
+	  Meteor.subscribe("users");
+	  Meteor.subscribe("votes");
+	  Meteor.subscribe("images");
+	  Meteor.subscribe("follow");
+	  Meteor.subscribe("topic");
+
 	$(document).ready(function() {
           var cont = '#summernote';
           $(cont).summernote({
@@ -1222,6 +1254,7 @@ Template.topic.rendered = function(){
                 dialogsInBody: true
                 });
                 });
+	
 }
 /* DEprectae quill editor
 Template.quill_editor.onRendered(function () {
@@ -1543,7 +1576,7 @@ function showMoreVisible() {
 $(window).scroll(showMoreVisible);
 
   Session.setDefault('itemsLimit', ITEMS_INCREMENT);
-Deps.autorun(function() {
+/*Deps.autorun(function() {
   Meteor.subscribe('questions', Session.get('itemsLimit'));
   Meteor.subscribe("answers");
   Meteor.subscribe("comments");
@@ -1556,8 +1589,7 @@ Deps.autorun(function() {
   Meteor.subscribe("topicanswers");
   Meteor.subscribe("chatmessages");
   Meteor.subscribe("notifications");
-
-});
+});*/
 
   Template.home.posts = function(){
  return AnswersList.find({is_status:1}, {sort: {created_at: -1},limit: Session.get("itemsLimit"),transform: function(doc){
@@ -1716,7 +1748,24 @@ Template.change_password.onCreated( function() {
         });
 });
 
+Template.chat.rendered = function(){
+Deps.autorun(function() {
+  Meteor.subscribe("follow");
+  Meteor.subscribe("users");
+  Meteor.subscribe("chatmessages");
+  Meteor.subscribe("images");
+})
 
+}
+Template.chatbox.rendered = function(){
+Deps.autorun(function() {
+  Meteor.subscribe("follow");
+  Meteor.subscribe("users");
+  Meteor.subscribe("chatmessages");
+  Meteor.subscribe("images");
+})
+
+}
 Template.chat.onCreated( function() {
   this.currentTab = new ReactiveVar( "empty" );
 });
@@ -1751,7 +1800,7 @@ Template.chat.helpers({
 		 if(typeof $('#panel-body') !== 'undefined'){
                  //$('#panel-body').scrollTop($('#panel-body')[0].scrollHeight);
                 }
-		$('#chatbox').hide();
+		$('.chatbox').hide();
 		tab_user_image = "nothing"
 	}else{
                 if (typeof tab_user.profile !== 'undefined'){
@@ -1760,7 +1809,7 @@ Template.chat.helpers({
                 }
 
 		tab_user = tab_user.username
-		$('#chatbox').show();
+		$('.chatbox').show();
 		if(typeof $('#panel-body') !== 'undefined'){
                  $('#panel-body').scrollTop($('#panel-body')[0].scrollHeight);
 		}
@@ -1836,7 +1885,7 @@ Template.chatbox.events({
 		}
 	},
 	"click .glyphicon-chevron-down": function(event, template) {
-		var div_id = $('#chatbox')
+		var div_id = $('.chatbox')
 		div_id.hide();
 	},
 	 "click .panel-heading-open": function(event, template) {
@@ -1845,7 +1894,7 @@ Template.chatbox.events({
 		var div_id = $('#panel-heading')
 		div_id.addClass('panel-heading-closed')
 		div_id.removeClass('panel-heading-open')
-		$('#chatbox').css("margin-top","2%")
+		$('.chatbox').css("margin-top","2%")
 	},
 	 "click .panel-heading-closed": function(event, template) {
                 $('#panel-body').show();
@@ -1853,7 +1902,7 @@ Template.chatbox.events({
                 var div_id = $('#panel-heading')
 		div_id.addClass('panel-heading-open')
                 div_id.removeClass('panel-heading-closed')
-		$('#chatbox').css("margin-top","-20%")
+		$('.chatbox').css("margin-top","-20%")
         }
 
 });
@@ -1861,18 +1910,18 @@ Template.chatbox.events({
 
 Template.chat.events({
         "click .chat_new ": function(event, template) {
-       		//Session.set(this._id, true);	 
+	//Session.set(this._id, true);	 
 		var currentTab = $(event.target)
 		var tab_user = currentTab.data( "template" )
 		hash= {"to_message":tab_user}
                 Meteor.call('updateChat', hash);
-		$('#chatbox').show();
+		$('.chatbox').show();
 		 $('#panel-body').show();
                 $('#panel-footer').show();
                 var div_id = $('#panel-heading')
                 div_id.addClass('panel-heading-open')
                 div_id.removeClass('panel-heading-closed')
-                $('#chatbox').css("margin-top","-20%")
+                $('.chatbox').css("margin-top","-20%")
 		template.currentTab.set( currentTab.data( "template" ) );
 
 	}	

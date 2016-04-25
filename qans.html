@@ -55,10 +55,13 @@
 		
 	      {{>question}}
 	      {{> yield}}
+		{{#if isPhone}}
+		{{else}}
 		 {{#if currentUser}}
 		<div class="hidden-xs hidden-sm hide-on-small-only">
-		{{chat}}
+		{{>chat}}
 		</div>
+		{{/if}}
 		{{/if}}
 	    <!--<p style="float:left;bottom:0;width:100%;">Copyright &copy; Topicerrati.com, 2015-2016.</p>-->
 	</template>
@@ -67,8 +70,8 @@
 	    <h2>Login</h2>
 	</template>
 	<template name="chatbox" >
-
-	<div id="chatbox"  style="float:left;position:fixed;margin-top:-20%;margin-left:80%;width:100%;height:auto;border: 2px solid #f7f7f7;display:none;">
+	{{#if isDesktop}}
+	<div class="chatbox"  style="float:left;position:fixed;margin-top:-20%;margin-left:80%;width:100%;height:auto;border: 2px solid #f7f7f7;display:none;">
 		<div class="container" style="margin-left:-7%;width:55%;">
 	    <div class="row">
 		<div class="col-md-5">
@@ -149,8 +152,97 @@
 	    </div>
 	</div>
 	</div>
+	{{else}}
+	 <div class="chatbox"  style="float:left;display:none;">
+                <div class="container" style="width:100%;">
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading panel-heading-open" style="width:100%;" id="panel-heading">
+                            <input type="hidden" id="to_msg" value="{{chatter}}" />
+                            <span class="glyphicon glyphicon-comment"></span> {{this.tab_user}}
+                            <div class="btn-group pull-right">
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                    <!--<span class="glyphicon glyphicon-chevron-down"><i class="fa fa-times"></i></span>-->
+                                        <span class=""><i class="fa fa-times glyphicon-chevron-down"></i></span>
+                              </button>
+                                <!--
+                                <ul class="dropdown-menu slidedown">
+                                    <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-refresh">
+                                    </span>Refresh</a></li>
+                                    <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-ok-sign">
+                                    </span>Available</a></li>
+                                    <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-remove">
+                                    </span>Busy</a></li>
+                                    <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-time"></span>
+                                        Away</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-off"></span>
+                                        Sign Out</a></li>
+                                </ul>
+                                -->
+ </div>
+                        </div>
+                        <div class="panel-body" id="panel-body" >
+                            <ul class="chat">
+                                {{#each chat_messages}}
+                                {{#if whoisboss}}
+                                <li class="right clearfix" style="width:100%;">
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <small class=" text-muted" style="font-size:8px;"><span class="glyphicon glyphicon-time"></span>{{formatDate created_at}}</small>
+                                            <strong class="pull-right primary-font"></strong>
+                                        </div>
+                                        <p style="word-wrap:break-word;padding:10px;background-color:#5cb85c;width:100%;border-top-right-radius:30px;border-bottom-right-radius:30px;border-top-left-radius:30px;border-bottom-left-radius:30px;color:white;">
+                                        {{{parseEmoticons message}}}
+                                        </p>
+                                    </div>
+                                   <span class="chat-img pull-right">
+                                    <img src="{{../user_image.url}}" alt="User Avatar" class="img-circle" style="border-radius:5px;max-width:50px;max-height:50px;"/>
+                                </span>
+
+                                </li>
+                                {{else}}
+                                <li class="left clearfix" style="width:100%;"><span class="chat-img pull-left">
+                                    <img src="{{../tab_user_image.url}}" alt="User Avatar" class="img-circle" style="border-radius:5px;max-width:50px;max-height:50px;"/>
+                                </span>
+                                    <div class="chat-body clearfix">
+                                        <div class="header">
+                                            <strong class="primary-font"></strong> <small class="pull-right text-muted" style="font-size:8px;">
+                                                <span class="glyphicon glyphicon-time"></span>{{formatDate created_at}}</small>
+                                        </div>
+                                        <p style="word-wrap:break-word;padding:10px;background-color:pink;width:100%;border-top-left-radius:30px;border-bottom-left-radius:30px;border-top-right-radius:30px;border-bottom-right-radius:30px;color:white;">
+                                        {{{parseEmoticons message}}}
+  </p>
+                                    </div>
+                                </li>
+                                {{/if}}
+                                {{/each}}
+                            </ul>
+                        </div>
+                        <div class="panel-footer" style="width:100%;" id="panel-footer">
+                            <div class="input-group">
+                                <input id="btn-input" type="text" class="form-control input-sm chat_class" placeholder="Type your message here..." />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-warning btn-sm" id="btn-chat">
+                                        Send</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+	{{/if}}
 	</template>
+
+
+
+
 	<template name="chat">
+	{{#if isDesktop}}
 	<div class="hidden-xs hide-on-small-only" style="float:left;position:fixed;margin-top:40%;margin-left:5%;width:16%;height:auto;border: 2px solid #f7f7f7;">
 	<div style="background-color:#337ab7;color:white;">Chat({{usersonline.count}})</div>
 	<div>
@@ -174,6 +266,33 @@
 		{{> Template.dynamic template="chatbox" data=tabData}}
 	</div>
 	</div>
+	{{/if}}
+	{{#if isPhone}}	
+	 <div class="visible-xs" style="">
+        <div style="background-color:#337ab7;color:white;">Chat({{usersonline.count}})</div>
+        <div>
+        {{#each usersonline}}
+                {{#if legaluser}}
+                {{else}}
+                {{#if this.status.idle}}
+                <span data-template="{{this._id}}" class="label label-warning chat_new" style="margin-top:1%;cursor:pointer;">{{username}}</span>
+                {{#if countunreadmessage}}
+                <a href="" class="badge1" data-badge="{{unread_messages.count}}"></a><br>
+                {{/if}}
+                {{/if}}
+                {{#if this.status.online}}
+                <span data-template="{{this._id}}" class="label label-success chat_new" style="margin-top:1%;cursor:pointer;">{{username}}</span>
+                {{#if countunreadmessage}}
+                <a href="" class="badge1" data-badge="{{unread_messages.count}}"></a><br>
+                {{/if}}
+                {{/if}}
+                {{/if}}
+        {{/each}}
+                {{> Template.dynamic template="chatbox" data=tabData}}
+        </div>
+        </div>
+	{{/if}}
+
 	</template>
 	<template name="home">
 	   <div class="hidden-xs hidden-sm hide-on-small-only">
@@ -187,6 +306,8 @@
         		<ul class="nav nav-tabs" role="tablist">
 		            <li class="active"><a href="#question" aria-controls="question" role="tab" data-toggle="tab">
                 		Question/Answers</a></li>
+			    <li class="visible-xs"><a href="#chat" aria-controls="chat" role="tab" data-toggle="tab">
+                                Chat</a></li>
 		        </ul>
 	        <!-- Tab panes -->
         		<div class="tab-content" style="padding-top: 20px">
@@ -201,6 +322,15 @@
 			        {{/if}}
 
 			    </div>
+			     <div role="tabpanel" class="tab-pane" id="chat">
+					<div class="visible-xs">
+					{{#if isPhone}}
+			     		{{#if currentUser}}
+				                {{>chat}}
+			                {{/if}}
+					{{/if}}
+					</div>
+				</div>
 		        </div>
 		    </div>
 		</div>
@@ -210,9 +340,11 @@
 	      {{> everyq}}
 	      {{/each }}-->
 	      </div>
+		<!--<div class="hidden-xs">
 		{{#if currentUser}}
 		{{>chat}}
 		{{/if}}
+		</div>-->
 		<!--
 		{{#if moreResults}}
 		    <div id="showMoreResults">
@@ -229,9 +361,6 @@
 	<div style="float:left;margin-top:8%;width:55%;margin-left:25%;">
 	{{>everyq}}
 	</div>
-	{{#if currentUser}}
-        {{>chat}}
-        {{/if}}
 </template>
 <template name="topic">
 	<div style="width:100%">
@@ -1116,9 +1245,6 @@
 
     </div>
     <!-- END WRAPPER -->
-		 {{#if currentUser}}
-                {{>chat}}
-                {{/if}}
 
 </template>
 
@@ -1602,7 +1728,7 @@
 
 <template name="question">
 
-<div class="col-sm-12 col-xs-12 col-lg-12" style="float:left;position:fixed;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
+<div class="col-sm-12 col-xs-12 col-lg-12 hidden-xs" style="float:left;position:fixed;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
 	<div class="col-sm-1 cols-xs-1 col-lg-1" style="float:left;margin-left:5%;color:white">
 		<h3><a style="color:white;" href="/">Topicerrati
 <!--		<img src="http://www.topicerrati.com/cfs/files/images/8h2Jbs9Pna67GTWsf/Topicerrati.png?" style="width: 71px; min-width: 212px; max-height: 71px; margin-left: -13%;">-->
@@ -1629,18 +1755,34 @@
 	<div style="margin-top:1%;">
 		{{>index}}
 	</div>
-<!--
-	<div style="float:left;width:20%;margin-top:1%;">
-	<button id="myBtn">Open Modal</button>
-	<div id="myModal" class="modal">
+</div>
+<div class="col-sm-12 col-xs-12 col-lg-12 visible-xs" style="float:left;margin-bottom:5%;background-color:#337ab7;margin-top:0%;z-index:50;">
+        <div class="col-sm-1 cols-xs-1 col-lg-1" style="float:left;margin-left:5%;color:white">
+                <h3><a style="color:white;" href="/">Topicerrati
+<!--            <img src="http://www.topicerrati.com/cfs/files/images/8h2Jbs9Pna67GTWsf/Topicerrati.png?" style="width: 71px; min-width: 212px; max-height: 71px; margin-left: -13%;">-->
+                </a>
+                </h3>
+                <div>Question Everything</div>
+        </div>
+        <div class="col-sm-6 col-xs-6 col-lg-6" style="float:left;margin-top:1%;border-radius:25px;margin-right:10%;">
+                <form style="height:80px;">
 
-		  <div class="modal-content">
-		    <span class="close">×</span>
-			{{> loginButtons}}
-		</div>
-	
-	</div>
-	</div>-->
+                 {{> EasySearch.Input index=questionsIndex attributes=inputAttributes}}
+                  <input type="submit" style="height:40px;width:172px;border-radius:80px;margin-top:10px;" value="Search/Ask">
+                  <ul style="background-color:#337ab7;">
+                   {{#EasySearch.IfInputEmpty index=questionsIndex}}
+                   {{else}}
+                    {{#EasySearch.Each index=questionsIndex}}
+                      <li><a style="color:white;" href="/question/{{unique_q_id}}"><b>Q:  </b>{{text}}</a></li>
+
+                    {{/EasySearch.Each}}
+                  {{/EasySearch.IfInputEmpty}}
+                  </ul>
+                </form>
+        </div>
+        <div style="margin-top:1%;">
+                {{>index}}
+        </div>
 </div>
 </template>
 <template name="everyq">
