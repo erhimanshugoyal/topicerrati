@@ -260,6 +260,8 @@
 		{{#if countunreadmessage}}
 		<a href="" class="badge1" data-badge="{{unread_messages.count}}"></a><br>
 		{{/if}}
+		{{else}}
+		<span data-template="{{this._id}}" class="label label-default chat_new" style="margin-top:1%;cursor:pointer;">{{username}}</span>
 		{{/if}}
 		{{/if}}
 	{{/each}}
@@ -284,6 +286,9 @@
                 <span data-template="{{this._id}}" class="label label-success chat_new" style="margin-top:1%;cursor:pointer;">{{username}}</span>
                 {{#if countunreadmessage}}
                 <a href="" class="badge1" data-badge="{{unread_messages.count}}"></a><br>
+                {{/if}}
+		 {{else}}
+                <span data-template="{{this._id}}" class="label label-default chat_new" style="margin-top:1%;cursor:pointer;">{{username}}</span>
                 {{/if}}
                 {{/if}}
                 {{/if}}
