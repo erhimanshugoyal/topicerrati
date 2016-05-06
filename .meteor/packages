@@ -52,3 +52,5 @@ meteorhacks:kadira
 meteorhacks:kadira-debug
 twbs:bootstrap
 mystor:device-detection
+meteorhacks:aggregate
+canotto90:chrome-push-notifications

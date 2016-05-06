@@ -1039,6 +1039,14 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Start searchin
   questionsIndex: () => QuestionsIndex // instanceof EasySearch.Index
 });
 
+
+Template.topusers.helpers({
+	topuserdata: function() {
+	  console.log(Meteor.call("show_topusers"))
+	}
+
+})
+
 Template.rightrecent.helpers({
   inputAttributes: function () {
 return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic...', 'id':'topic_input' , 'required': 'true', 'name': 'search_topic', 'autocomplete': 'off', 'action':''};
@@ -2212,6 +2220,30 @@ if (Meteor.isServer) {
 	Meteor.publish("notifications", function () {
                 return Notification.find();
         });
+	 Meteor.publish("show_topusers", function () {
+        	  var pipeline = [
+                      {
+                        $group : {
+                           _id : { user: "$user"},
+                           count: { $sum: 1 }
+                        }
+                      },
+                        { $sort: { count: -1 } },
+                        {$limit: 3}
+                           ]
+                var result = QuestionsList.aggregate(pipeline)
+		arr = []
+		for (i =0 ;i < result.length;i++) {
+			console.log(result[i])
+			if (result[i]._id.user ==  null)
+				continue;
+			arr.push(result[i]._id.user)
+		}
+		console.log(arr)
+		all_users = Meteor.users.find({ "_id": { $in: arr }} )
+                return all_users
+
+	});
 	Images.allow({
  	 'insert': function () {
     		// add custom authentication code here
@@ -2772,18 +2804,30 @@ ChatMessage.update(unread_messages[i]._id,{$set:{"is_seen": 1}})
 }
 },
 upload_profile_pic: function (fileObj_id) {
+		 if(Meteor.userId() == null){
+                return;
+        }
                 Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.image_id": fileObj_id}})
 
 },
 upload_cover_pic: function (fileObj_id) {
+		 if(Meteor.userId() == null){
+                return;
+        }
                 Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.cover_image_id": fileObj_id}})
 
 },
 upload_topic_pic: function (topicid,fileObj_id) {
+		 if(Meteor.userId() == null){
+                return;
+        }
                 TopicList.update({_id:topicid}, {$set:{"topic_image_id": fileObj_id}})
 
 },
 userfollow: function(q_id) {
+	 if(Meteor.userId() == null){
+                return;
+        }
         found = FollowList.findOne({following_ids:q_id, u_id: Meteor.userId(),is_topic:0})
         found_u_id = ""
         following = []
@@ -2830,6 +2874,9 @@ userfollow: function(q_id) {
 
 },
 	topic_create: function(hash){
+		 if(Meteor.userId() == null){
+                return;
+        }
 			 TopicList.insert({title:hash.topic
                                 ,u_id:Meteor.userId(),created_at:new Date(),unique_q_id:hash.unique_q_id
                                 }, function(err,docsInserted){
@@ -2839,6 +2886,9 @@ userfollow: function(q_id) {
 		},
 
 	topicfollow: function(q_id) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	 found = FollowList.findOne({following_topic_ids:q_id, u_id: Meteor.userId(),is_topic:1})
    	found_u_id = ""
         following = []
@@ -2893,6 +2943,9 @@ userfollow: function(q_id) {
 	},
 
 	create_topic_post: function(hash) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	if ((typeof hash.is_status !== 'undefined') && (hash.is_status == 1)){
 	AnswersList.insert({text:hash.text,topic_id:hash.topic_id,created_at:new Date(),u_id:Meteor.userId(),is_status:1})	
 	}else
@@ -2902,6 +2955,9 @@ userfollow: function(q_id) {
 	},
 	
 	question_ask: function(hash) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	 QuestionsList.insert({
                 text: hash.question,
                 unique_q_id: hash.question.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-"),
@@ -2912,6 +2968,9 @@ userfollow: function(q_id) {
 	},
 	
 	add_answer: function(q_id, answer) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	thiselement = QuestionsList.findOne({_id:q_id})
 	var q_id = thiselement._id;
         var q_text = thiselement.text;
@@ -2960,6 +3019,9 @@ userfollow: function(q_id) {
 	},
 
 	edit_answer: function(q_id,answer) {
+		 if(Meteor.userId() == null){
+                return;
+        }
 		ans_or_post = AnswersList.findOne({_id:q_id})
 		if(typeof ans_or_post.is_status !== 'undefined' && ans_or_post.is_status == 1){
 		AnswersList.update(q_id,{$set:{"text": answer}})
@@ -2968,6 +3030,9 @@ userfollow: function(q_id) {
 		}
 	},
 	comment_insert: function(q_id,comment) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	thiselement = AnswersList.findOne({_id:q_id})	
 	//console.log(thiselement)
 	if (typeof thiselement.topic_id == 'undefined'){
@@ -3026,6 +3091,9 @@ userfollow: function(q_id) {
 	},
 
 	reply_insert: function(q_id,commentreply) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	//console.log(q_id)
 	thiselement = CommentsList.findOne({_id:q_id})
 	 var q_id = thiselement._id;
@@ -3052,6 +3120,9 @@ userfollow: function(q_id) {
 	},
 
 	upvote_answer: function (q_id) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	thiselement = AnswersList.findOne({_id:q_id})	
 	found = Votes.findOne({answer_id: q_id, u_id: Meteor.userId(), upvote:1})
         if (found == null ){
@@ -3081,6 +3152,9 @@ userfollow: function(q_id) {
 	},
 
 	downvote_answer : function (q_id) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	thiselement = AnswersList.find({_id:q_id})
 	found_vote = Votes.findOne({answer_id: q_id, u_id: Meteor.userId(),downvote: 1})
         if (found_vote == null ){
@@ -3113,6 +3187,9 @@ userfollow: function(q_id) {
 	},
 
 	upvote_comment: function(q_id) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	thiselement = CommentsList.findOne({_id:q_id})
 	found = Votes.findOne({comment_id: q_id, u_id: Meteor.userId(), upvote:1})
         if (found == null ){
@@ -3141,6 +3218,9 @@ userfollow: function(q_id) {
         }
 	},
 	downvote_comment: function(q_id) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	thiselement = CommentsList.findOne({_id:q_id})
 	found_vote = Votes.findOne({comment_id: q_id, u_id: Meteor.userId(),downvote: 1})
         if (found_vote == null ){
@@ -3171,6 +3251,10 @@ userfollow: function(q_id) {
 	},
 
 	upvote_question: function(q_id) {
+	 if(Meteor.userId() == null){
+                return;
+        }
+
 	thiselement =  QuestionsList.findOne({_id:q_id}) 
         found = Votes.findOne({question_id: q_id, u_id: Meteor.userId(), upvote:1})
         if (found == null ){
@@ -3201,6 +3285,9 @@ userfollow: function(q_id) {
 	},
 
 	downvote_question: function(q_id) {
+	 if(Meteor.userId() == null){
+                return;
+        }
 	thiselement =  QuestionsList.findOne({_id:q_id})
 	 found_vote = Votes.findOne({question_id: q_id, u_id: Meteor.userId(),downvote: 1})
         if (found_vote == null ){
@@ -3230,28 +3317,79 @@ userfollow: function(q_id) {
 	},
 
 	remove_notification: function(q_id){
+		 if(Meteor.userId() == null){
+                return;
+        }
 		Notification.update(q_id,{$set:{is_seen:1}})
 	},
 	remove_message_notification: function(q_id){
+		 if(Meteor.userId() == null){
+                return;
+        }
                 ChatMessage.update(q_id,{$set:{is_seen:1}})
         },
 
 	create_default_fields: function(){
+	 if(Meteor.userId() == null){
+                return;
+        }
 	Meteor.users.update({_id:Meteor.userId()}, {$set:{"profile.occupation": '',"profile.skills": '',"profile.bio": '',"profile.birthdate": '',"profile.location": ''}})
 	},
 	update_user_profile: function(text,attr){
+	 if(Meteor.userId() == null){
+                return;
+        }
 	var attr = JSON.stringify(attr)
 	var text = JSON.stringify(text)
 	Meteor.users.update({_id:Meteor.userId()}, {$set:{attr:text}})
 	},
 	 update_user_profile: function(hash){
+	 if(Meteor.userId() == null){
+                return;
+        }
         Meteor.users.update({_id:Meteor.userId()}, {$set:hash})
         },
 	delete_question: function(obj){
+	 if(Meteor.userId() == null){
+                return;
+        }
+	ql = QuestionsList.find({user:Meteor.userId(),_id:obj})
+	if (typeof ql == 'undefined'){
+		return;
+	}
+	if(Meteor.userId() == null){
+		return;		
+	}
 	 QuestionsList.remove(obj);
 	},
 	setusername: function(username){
 		Accounts.setUsername(Meteor.userId(), username)
-	}
+	},
+	 show_topusers: function(){
+		
+                 var pipeline = [
+                      {
+                        $group : {
+                           _id : { user: "$user"},
+                           count: { $sum: 1 }
+                        }
+                      },
+                        { $sort: { count: -1 } },
+                        {$limit: 3}
+                           ]
+		var result = {}
+                var result = QuestionsList.aggregate(pipeline)
+                arr = []
+                for (i =0 ;i < result.length;i++) {
+                        console.log(result[i])
+                        if (result[i]._id.user ==  null)
+                                continue;
+                        arr.push(result[i]._id.user)
+                }
+                console.log(arr)
+                all_users = Meteor.users.find({ "_id": { $in: arr }} )
+                return all_users
+                }
 
+	
 });

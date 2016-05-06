@@ -8,7 +8,7 @@ sitemaps.add('/sitemap.xml', function() {
         }
 	allquestion = QuestionsList.find().fetch()
         for (i = 0;i < allquestion.length; i++) {
-            arrhash.push({ page: '/topic/'+allquestion[i].unique_q_id, lastmod: new Date() })
+            arrhash.push({ page: '/question/'+allquestion[i].unique_q_id, lastmod: new Date() })
         }
   return arrhash;
 });
