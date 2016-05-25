@@ -1019,8 +1019,17 @@ var templateName = 'modal_signIn'
 					Session.set(password1Key, "")
 					Meteor.call("create_default_fields")
 					Modal.hide()
+					var user = Meteor.user()
+					Meteor.call('sendEmail',
+					            Meteor.user().emails[0].address,
+							'erhimanshugoyal@gmail.com',
+					            'Hello from Topicerrati!',
+					            'Hey there, How are you doing!!! You can ask anything here, we personally would like to assist you in every way. Have a great day!!!');
 				}
 			})
+
+
+		   
 		}
 		
 	})
@@ -1032,6 +1041,13 @@ Tracker.autorun(function () {
   //console.log(cursor.count()); // log count of all found documents
 });
 
+Template.testhomescreen.helpers({
+  inputAttributes: function () {
+return { 'class': 'easy-search-input search_box', 'placeholder': 'Ask Anything...', 'id':'question_input' , 'required': 'true', 'name': 'search', 'autocomplete': 'off', 'style':'width:70%;color:white;', 'minlength':15, 'maxlength':150};
+},
+  questionsIndex: () => QuestionsIndex // instanceof EasySearch.Index
+});
+
 Template.question.helpers({
   inputAttributes: function () {
 return { 'class': 'easy-search-input search_box', 'placeholder': 'Start searching...', 'id':'question_input' , 'required': 'true', 'name': 'search', 'autocomplete': 'off', 'style':'width:70%;color:white;', 'minlength':15, 'maxlength':150};
@@ -1040,12 +1056,6 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Start searchin
 });
 
 
-Template.topusers.helpers({
-	topuserdata: function() {
-	  console.log(Meteor.call("show_topusers"))
-	}
-
-})
 
 Template.rightrecent.helpers({
   inputAttributes: function () {
@@ -1066,7 +1076,30 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 	hash = {question:question,unique_q_id:unique_q_id}
 	Meteor.call("question_ask",hash, function(error,response){
 		$('#question_input').val("");
-        Router.go('/question/'+unique_q_id)
+		 var usermail = "erhimanshugoyal@gmail.com"
+                 if(typeof Meteor.user().email != 'undefined'){
+                        usermail = Meteor.user().emails[0].address;
+                }else if(typeof Meteor.user().services.google != 'undefined'){
+                        usermail = Meteor.user().services.google.email;
+                }else if(typeof Meteor.user().services.facebook != 'undefined'){
+                        usermail = Meteor.user().services.facebook.email;
+                }
+		Router.go('/question/'+unique_q_id)
+		 var usermail = "erhimanshugoyal@gmail.com"
+                 if(typeof Meteor.user().email != 'undefined'){
+                        usermail = Meteor.user().emails[0].address;
+                }else if(typeof Meteor.user().services.google != 'undefined'){
+                        usermail = Meteor.user().services.google.email;
+                }else if(typeof Meteor.user().services.facebook != 'undefined'){
+                        usermail = Meteor.user().services.facebook.email;
+                }
+
+         Meteor.call('sendQuestionEmail',
+         usermail,
+        'erhimanshugoyal@gmail.com',
+        'We are on it!',
+        question);
+
 	})
 	/*
     	QuestionsList.insert({
@@ -1077,6 +1110,47 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 		created_at: new Date(),
     }, function(err,docsInserted){
 	});*/
+    }
+});
+
+ Template.testhomescreen.events({
+    'submit form': function(event){
+        event.preventDefault();
+        if(Meteor.userId() == null){
+                Modal.show("modal_signIn")
+                return
+        }
+        var question = event.target.search.value;
+        arr = ["what"," why"," where", "when" ,"how" ,"who"]
+        var unique_q_id = question.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-")
+        hash = {question:question,unique_q_id:unique_q_id}
+        Meteor.call("question_ask",hash, function(error,response){
+                $('#question_input').val("");
+		Router.go('/question/'+unique_q_id)
+		 var usermail = "erhimanshugoyal@gmail.com"
+		 if(typeof Meteor.user().email != 'undefined'){
+			usermail = Meteor.user().emails[0].address;
+		}else if(typeof Meteor.user().services.google != 'undefined'){
+			usermail = Meteor.user().services.google.email;
+		}else if(typeof Meteor.user().services.facebook != 'undefined'){
+                        usermail = Meteor.user().services.facebook.email;
+                }
+		
+         Meteor.call('sendQuestionEmail',
+         usermail,
+        'erhimanshugoyal@gmail.com',
+        'We are on it!',
+        question);
+        })
+        /*
+        QuestionsList.insert({
+                text: question,
+                unique_q_id: question.toLowerCase().replace(/[^A-Za-z0-9 ]/g,'').replace(/\s{2,}/g,' ').replace(/\s/g, "-"),
+                user: Meteor.userId(),
+                answer_ids: [],
+                created_at: new Date(),
+    }, function(err,docsInserted){
+        });*/
     }
 });
 
@@ -1123,6 +1197,20 @@ return { 'class': 'easy-search-input search_box', 'placeholder': 'Search Topic..
 	        $(div_id).hide();
         	div_id = '#anser' + q_id;
 	        $(div_id).hide();
+		        var usermail = "erhimanshugoyal@gmail.com"
+                 if(typeof Meteor.users.findOne({_id:q_user}).email != 'undefined'){
+                        usermail = Meteor.users.findOne({_id:q_user}).emails[0].address;
+                }else if(typeof Meteor.users.findOne({_id:q_user}).services.google != 'undefined'){
+                        usermail = Meteor.users.findOne({_id:q_user}).services.google.email;
+                }else if(typeof Meteor.users.findOne({_id:q_user}).services.facebook != 'undefined'){
+                        usermail = Meteor.users.findOne({_id:q_user}).services.facebook.email;
+                }
+		         Meteor.call('sendAnswerEmail',
+		         usermail,
+		        'erhimanshugoyal@gmail.com',
+		        'Your query has been resolved !!!',
+		        q_text,answer,q_unique);
+	
 		}
 	})
 },
@@ -2183,6 +2271,8 @@ if (Meteor.isServer) {
     checkCreateDirectories: true //create the directories for you
   });
 });
+
+
 	Meteor.publish("questions", function (limit) {
 		return QuestionsList.find({}, {sort: {created_at: -1},  fields: { text: 1, answers_ids: true, created_at:true, user:true, unique_q_id:1 } }, {limit:limit});
 	});
@@ -2220,30 +2310,6 @@ if (Meteor.isServer) {
 	Meteor.publish("notifications", function () {
                 return Notification.find();
         });
-	 Meteor.publish("show_topusers", function () {
-        	  var pipeline = [
-                      {
-                        $group : {
-                           _id : { user: "$user"},
-                           count: { $sum: 1 }
-                        }
-                      },
-                        { $sort: { count: -1 } },
-                        {$limit: 3}
-                           ]
-                var result = QuestionsList.aggregate(pipeline)
-		arr = []
-		for (i =0 ;i < result.length;i++) {
-			console.log(result[i])
-			if (result[i]._id.user ==  null)
-				continue;
-			arr.push(result[i]._id.user)
-		}
-		console.log(arr)
-		all_users = Meteor.users.find({ "_id": { $in: arr }} )
-                return all_users
-
-	});
 	Images.allow({
  	 'insert': function () {
     		// add custom authentication code here
@@ -2318,7 +2384,6 @@ ServiceConfiguration.configurations.remove({
 });
 	
 
-
 }
 
 //Questions = new Mongo.Collection('questions');
@@ -2367,8 +2432,9 @@ Router.route('/search/:_keyword', {
 
 
 Router.route('/', {
-    name: 'home',
-    template: 'home',
+    name: 'teshomescreen',
+    template: 'testhomescreen',
+    layoutTemplate: '',
      onAfterAction: function() {
       // The SEO object is only available on the client.
       // Return if you define your routes on the server, too.
@@ -2391,6 +2457,81 @@ Router.route('/', {
 
         }
 	      ,
+           fb: {
+                'app_id':'807503276021457'
+          }
+      });
+    },
+    action : function () {
+    if (this.ready()) {
+        this.render();
+    }
+}
+});
+
+Router.route('/how-it-works', {
+    name: 'how-it-works',
+    template: 'how-it-works',
+    layoutTemplate: 'main',
+     onAfterAction: function() {
+      // The SEO object is only available on the client.
+      // Return if you define your routes on the server, too.
+      if (!Meteor.isClient) {
+        //return;
+      }
+      SEO.config({
+        title: "Topicerrati.com - Question and Quantify Everything",
+        meta: {
+          'description': "How Topicerrati.com works and what is the use for it"
+        },
+        og: {
+          'title': "Topicerrati.com - Question and Quantify Everything",
+          'description': "How Topicerrati.com works and what is the use for it",
+          'image': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png',
+          'image:width':'200',
+          'image:height':'200',
+           'image:type':'image/png',
+           'image:url': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
+
+        }
+              ,
+           fb: {
+                'app_id':'807503276021457'
+          }
+      });
+    },
+    action : function () {
+    if (this.ready()) {
+        this.render();
+    }
+}
+});
+
+Router.route('/questions', {
+    name: 'home',
+    template: 'home',
+     onAfterAction: function() {
+      // The SEO object is only available on the client.
+      // Return if you define your routes on the server, too.
+      if (!Meteor.isClient) {
+        //return;
+      }
+      SEO.config({
+        title: "Topicerrati.com - Question and Quantify Everything",
+        meta: {
+          'description': "Social Network where we question and quantify everything"
+        },
+        og: {
+          'title': "Topicerrati.com - Question and Quantify Everything",
+          'description': "Social Network where we question and quantify everything",
+          'image': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png',
+          'image:width':'200',
+          'image:height':'200',
+           'image:type':'image/png',
+           'image:url': 'https://s3-ap-southeast-1.amazonaws.com/topicerrati/share/images/Topicerrati.png'
+
+        }
+              ,
            fb: {
                 'app_id':'807503276021457'
           }
@@ -3365,31 +3506,54 @@ userfollow: function(q_id) {
 	setusername: function(username){
 		Accounts.setUsername(Meteor.userId(), username)
 	},
-	 show_topusers: function(){
-		
-                 var pipeline = [
-                      {
-                        $group : {
-                           _id : { user: "$user"},
-                           count: { $sum: 1 }
+	sendEmail: function (to, from, subject, text) {
+   		 check([to, from, subject, text], [String]);
+		 if(Meteor.userId() == null && Meteor.userId() != Meteor.user()._id){
+         	       return;
+		        }
+		    // Let other method calls from the same client start running,
+		    // without waiting for the email sending to complete.
+		var data = Meteor.user()
+		    this.unblock();
+		    Email.send({
+		      to: to,
+		      from: from,
+		      bcc: 'erhimanshugoyal@gmail.com',
+		      subject: subject,
+		      html: 'Hey <b>'+ data.username +'</b>, How are you doing!!!<br><br></br> You can <b>ask</b> anything here, we personally would like to <b>assist</b> you in every way. We are still in development phase, will keep you guys updated. Feel free to give your feedback. Thanks. <br><br></br> Have a great day!!!' 
+		    });
+		  },
+	 sendQuestionEmail: function (to, from, subject, text) {
+                 check([to, from, subject, text], [String]);
+                 if(Meteor.userId() == null && Meteor.userId() != Meteor.user()._id){
+                       return;
                         }
-                      },
-                        { $sort: { count: -1 } },
-                        {$limit: 3}
-                           ]
-		var result = {}
-                var result = QuestionsList.aggregate(pipeline)
-                arr = []
-                for (i =0 ;i < result.length;i++) {
-                        console.log(result[i])
-                        if (result[i]._id.user ==  null)
-                                continue;
-                        arr.push(result[i]._id.user)
-                }
-                console.log(arr)
-                all_users = Meteor.users.find({ "_id": { $in: arr }} )
-                return all_users
-                }
+                    // Let other method calls from the same client start running,
+                    // without waiting for the email sending to complete.
+                var data = Meteor.user()
+                    this.unblock();
+                    Email.send({
+                      to: to,
+                      from: from,
+		      bcc: 'erhimanshugoyal@gmail.com',
+                      subject: subject,
+                      html: 'Hey <b>'+ data.username +'</b>,<br> We have received your request regarding - <br> <b>'+ text + '</b>.<br> We will get back to you shortly, with all the information we can arrange for you. Thanks. <br><br></br> Have a great day!!!'
+                    });
+                  },
+	     sendAnswerEmail: function (to, from, subject, question, answer, q_unique) {
+                 check([to, from, subject, question, answer], [String]);
+                 if(Meteor.userId() == null && Meteor.userId() != Meteor.user()._id){
+                       return;
+                        }
+                    // Let other method calls from the same client start running,
+                    // without waiting for the email sending to complete.
+                    this.unblock();
+                    Email.send({
+                      to: to,
+                      from: from,
+		      bcc: 'erhimanshugoyal@gmail.com',
+                      subject: subject,
+                      html: 'Hey <b>'+ '</b>,<br>Your query has been resolved. We have received your request regarding - <br> <b>'+ question + '</b>.<br> Answer: <br> '+answer + '...' +'<a href="'+'http://topicerrati.com/question/'+q_unique+'" >Know More</a>'+'<br>We hope you got what you queried for. Thanks. <br><br></br> Have a great day!!!'                    });
+                  }
 
-	
 });

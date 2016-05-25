@@ -117,6 +117,7 @@ ul, li {
 	position:absolute;
 	background-color:#6495ED;
 	color:white;
+	z-index:10;
 }
 .profile:hover {
 	cursor:pointer;
