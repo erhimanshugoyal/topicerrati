@@ -386,6 +386,13 @@
 	{{/if}}-->
 </template>
 
+<template name="globe">
+	<div style="margin-left:35%;background-color:inherit;" id="crazy_traveller">
+	<div id="textanime" style="display:none;">Your question has reached the world !!!</div>
+	<img src="https://s3-ap-southeast-1.amazonaws.com/topicerrati/earthquestion.gif"  alt="Globe image" class="circle responsive-img" style="max-height:200px;max-width:200px;">
+	</div>
+</template>
+
 
 <template name="questionPage">
 	<div class="hidden-xs hidden-sm hide-on-small-only">
@@ -1780,6 +1787,7 @@
                    {{#EasySearch.IfInputEmpty index=questionsIndex}}
 		       <li><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/questions"><b>Take me to where all questions are !!!</b></a></li>
 			<li><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/how-it-works"><b>How it works</b></a></li>
+			 <li><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/game"><b>I am here for fun</b></a></li>
                    {{else}}
                     {{#EasySearch.Each index=questionsIndex}}
                       <li><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;" href="/question/{{unique_q_id}}"><b>Q:  </b>{{text}}</a></li>
@@ -1792,11 +1800,17 @@
         </div>
 </div>
 
-<div style="text-align:center;color:white;font-size:24px;width:100%;float:left;margin-top:5%;"><i class="fa fa-quote-left fa-5"></i>&nbsp;&nbsp;Your problem is not only yours.&nbsp;&nbsp;<i class="fa fa-quote-right fa-5"></i></div>
-<div style="text-align:center;color:white;font-size:24px;width:100%;float:left;margin-top:12%;"><i class="fa fa-quote-left fa-5"></i>&nbsp;&nbsp;Keep doing amazing.&nbsp;&nbsp;<i class="fa fa-quote-right fa-5"></i></div>
+<div style="text-align:center;color:white;font-size:24px;width:100%;float:left;margin-top:1%;"><i class="fa fa-quote-left fa-5"></i>&nbsp;&nbsp;Your problem is not only yours.&nbsp;&nbsp;<i class="fa fa-quote-right fa-5"></i></div>
+<div style="text-align:center;color:white;font-size:24px;width:100%;float:left;margin-top:1%;"><i class="fa fa-quote-left fa-5"></i>&nbsp;&nbsp;Keep doing amazing.&nbsp;&nbsp;<i class="fa fa-quote-right fa-5"></i></div>
+<div style="text-align:center;color:white;font-size:24px;width:60%;float:left;margin-top:10%;margin-left:20%;"><img src="https://s3-ap-southeast-1.amazonaws.com/topicerrati/karate.gif" style="color:white;"/>
+</div>
+<div style="text-align:center;color:white;font-size:24px;width:100%;float:left;margin-top:1%;"><i class="fa fa-quote-left fa-5"></i>&nbsp;&nbsp;Yeah! We become a ninja to solve your problems.&nbsp;&nbsp;<i class="fa fa-quote-right fa-5"></i></div>
 </div>
 </template>
 
+<template name="game">
+<canvas id="myCanvas" width="480" height="320" style="border:1px solid #ffffff;margin-top:12%;margin-left:30%;"></canvas>
+</template>
 
 <template name="question">
 
@@ -1921,6 +1935,7 @@
 		</div>
 		{{/if}}
 		{{/if}}
+		{{#if this.answersObj}}
 		 {{#each this.answersObj}}
                 <div id="" style="margin-top:1%;background-color:#FCFCFC;padding:10px;">
                 <div style="word-wrap:break-word;font-size:15px;"> 
@@ -1953,6 +1968,11 @@
                 {{else}}
 
                 {{/each}}
+		{{else}}
+		{{>globe}}
+		{{/if}}
+
+
 		{{/if}}
 	</div>
 </div>
