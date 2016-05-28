@@ -653,8 +653,8 @@ Template.everyq.shareData =  function(){
 
 Template.questionPage.rendered = function(){
 	QuestionsIndex.getComponentMethods().search("")
-	Meteor.subscribe("questions");
-	 Meteor.subscribe("answers");
+	//Meteor.subscribe("questions");
+	 //Meteor.subscribe("answers");
 	 Meteor.subscribe("comments");
 	 Meteor.subscribe("replycomments");
  	 Meteor.subscribe("users");
@@ -2444,12 +2444,15 @@ if (Meteor.isServer) {
   });
 });
 
-
+	
 	Meteor.publish("questions", function (limit) {
 		return QuestionsList.find({}, {sort: {created_at: -1},  fields: { text: 1, answers_ids: true, created_at:true, user:true, unique_q_id:1 } }, {limit:limit});
 	});
-	Meteor.publish("answers", function () {
-                return AnswersList.find({}, { fields: { is_status:1, text:1, topic_id:1, ans: 1, comment_ids: true, created_at:true, question_id:true, u_id:true } });
+	 Meteor.publish("questionpage", function (questionid) {
+                return QuestionsList.find({unique_q_id:questionid}, {sort: {created_at: -1},  fields: { text: 1, answers_ids: true, created_at:true, user:true, unique_q_id:1 } });
+        });
+	Meteor.publish("answers", function (ids) {
+                return AnswersList.find({_id:  {$in: ids}}, { fields: { is_status:1, text:1, topic_id:1, ans: 1, comment_ids: true, created_at:true, question_id:true, u_id:true } });
         });
 	Meteor.publish("comments", function () {
                 return CommentsList.find({}, { fields: { comment: 1, commentreply_ids: true, created_at:true, answer_id:true, u_id:true } });
@@ -2809,6 +2812,7 @@ Router.route('/question/:_id', {
     template: 'questionPage',
     data: function(){
         var q_id = this.params._id;
+	Meteor.subscribe("questionpage",q_id)
 	var found = QuestionsList.findOne({ unique_q_id: q_id  })
 	if (typeof found == 'undefined'){
 	//	Router.go('/')
@@ -2818,6 +2822,7 @@ Router.route('/question/:_id', {
 	 transform: function(doc) {
 	 var index = 0;
         if (typeof doc.answers_ids !== 'undefined') {
+		Meteor.subscribe("answers",doc.answers_ids)
                 doc.answersObj = AnswersList.find({
                 _id:  {$in: doc.answers_ids}
             }, {sort: {created_at: -1},transform: function(doc){
