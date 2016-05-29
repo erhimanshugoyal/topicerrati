@@ -1630,16 +1630,28 @@
                                     });
                                 }
 				</script>
-
-                                <div id="customBtn" class="customGPlusSignIn" style="display: inline-block; background: #dd4b39; color: white; white-space: nowrap; border-radius: 0px; width: 241px; cursor: pointer;margin-right:3%;">
+				{{#if isPhone}}
+                                <div id="customBtn" class="customGPlusSignIn" style="display: inline-block; background: #dd4b39; color: white; white-space: nowrap; border-radius: 0px; width: 241px; cursor: pointer;margin-right:3%;margin-left:-40%;">
                                     <span class="icon" style="display: inline-block; vertical-align: middle; height: 35px; border-right: #bb3f30 1px solid; width: 42px;"><i class="fa fa-google-plus" style="font-size: 19px; padding: 10px;"></i></span>
                                     <span class="buttonText" style="display: inline-block; vertical-align: middle; padding-left: 23px; padding-right: 35px; font-size: 11.5px; font-weight: bold; font-family: 'Roboto',arial,sans-serif;">Sign in with Google +</span>
                                 </div>
-                            				
+				{{else}}
+				<div id="customBtn" class="customGPlusSignIn" style="display: inline-block; background: #dd4b39; color: white; white-space: nowrap; border-radius: 0px; width: 241px; cursor: pointer;margin-right:3%;">
+                                    <span class="icon" style="display: inline-block; vertical-align: middle; height: 35px; border-right: #bb3f30 1px solid; width: 42px;"><i class="fa fa-google-plus" style="font-size: 19px; padding: 10px;"></i></span>
+                                    <span class="buttonText" style="display: inline-block; vertical-align: middle; padding-left: 23px; padding-right: 35px; font-size: 11.5px; font-weight: bold; font-family: 'Roboto',arial,sans-serif;">Sign in with Google +</span>
+                                </div>
+				{{/if}}
+                            	{{#if isPhone}}
+				  <div id="fb-root" class="customGPlusSignIn" style="display: inline-block; background:rgba(53, 79, 136, 1); color: white; white-space: nowrap; border-radius: 0px; width: 241px; cursor: pointer;margin-top:1%;margin-left:-40%;">
+                                    <span class="icon" style="display: inline-block; vertical-align: middle; height: 35px; border-right: white 1px solid; width: 42px;"><i class="fa fa-facebook" style="font-size: 19px; padding: 10px;"></i></span>
+                                    <span class="buttonText" style="display: inline-block; vertical-align: middle; padding-left: 23px; padding-right: 35px; font-size: 11.5px; font-weight: bold; font-family: 'Roboto',arial,sans-serif;"><a facebook="" click="checkLoginState()" href="" class="" style="color:white;">Sign in with Facebook</a></span>
+                                </div>	
+				{{else}}
 				  <div id="fb-root" class="customGPlusSignIn" style="display: inline-block; background:rgba(53, 79, 136, 1); color: white; white-space: nowrap; border-radius: 0px; width: 241px; cursor: pointer;margin-top:1%;">
                                     <span class="icon" style="display: inline-block; vertical-align: middle; height: 35px; border-right: white 1px solid; width: 42px;"><i class="fa fa-facebook" style="font-size: 19px; padding: 10px;"></i></span>
                                     <span class="buttonText" style="display: inline-block; vertical-align: middle; padding-left: 23px; padding-right: 35px; font-size: 11.5px; font-weight: bold; font-family: 'Roboto',arial,sans-serif;"><a facebook="" click="checkLoginState()" href="" class="" style="color:white;">Sign in with Facebook</a></span>
-                                </div>				
+                                </div>
+				{{/if}}			
 				</div>
 				
 		
@@ -1783,14 +1795,14 @@
            <form>
 		{{> EasySearch.Input index=questionsIndex attributes=inputAttributes}}
                 <input type="submit"  value="Search"/>
-		 <ul style="background-color:#337ab7;">
+		 <ul style="backgroundcolor:#337ab7;" class="nav nav-pills pillbackground">
                    {{#EasySearch.IfInputEmpty index=questionsIndex}}
-		       <li><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/questions"><b>Take me to where all questions are !!!</b></a></li>
-			<li><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/how-it-works"><b>How it works</b></a></li>
-			 <li><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/game"><b>I am here for fun</b></a></li>
+		       <li style="width:100%;"><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/questions"><b>Take me to where all questions are !!!</b></a></li>
+			<li style="width:100%;"><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/how-it-works"><b>How it works</b></a></li>
+			 <li style="width:100%;"><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;text-align:center;" href="/game"><b>I am here for fun</b></a></li>
                    {{else}}
                     {{#EasySearch.Each index=questionsIndex}}
-                      <li><a style="color:white;float:left;width:100%;text-align:left;margin-bottom:1%;" href="/question/{{unique_q_id}}"><b>Q:  </b>{{text}}</a></li>
+                      <li style="width:100%;"><a style="color:white;float:left;width:100%;text-align:left;" href="/question/{{unique_q_id}}"><b>Q:  </b>{{text}}</a></li>
 
                     {{/EasySearch.Each}}
                   {{/EasySearch.IfInputEmpty}}

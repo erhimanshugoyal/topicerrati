@@ -1506,7 +1506,7 @@ Template.topic.shareData =  function(){
 }
 
 Template.topic.rendered = function(){
-	 Meteor.subscribe("answers");
+//	 Meteor.subscribe("answers");
 	  Meteor.subscribe("comments");
 	  Meteor.subscribe("replycomments");
 	  Meteor.subscribe("users");
@@ -2454,6 +2454,9 @@ if (Meteor.isServer) {
 	Meteor.publish("answers", function (ids) {
                 return AnswersList.find({_id:  {$in: ids}}, { fields: { is_status:1, text:1, topic_id:1, ans: 1, comment_ids: true, created_at:true, question_id:true, u_id:true } });
         });
+	Meteor.publish("topicanswers", function (topicid) {
+                return AnswersList.find({topic_id:  topicid}, { fields: { is_status:1, text:1, topic_id:1, ans: 1, comment_ids: true, created_at:true, question_id:true, u_id:true } });
+        });
 	Meteor.publish("comments", function () {
                 return CommentsList.find({}, { fields: { comment: 1, commentreply_ids: true, created_at:true, answer_id:true, u_id:true } });
         });
@@ -3043,6 +3046,7 @@ Router.route('/topic/:_id', {
 		console.log(new Date())
         return TopicList.findOne({unique_q_id:q_id},{
 	 transform: function(doc) {
+		Meteor.subscribe("topicanswers",doc._id)
 		doc.topicanswers = AnswersList.find({topic_id:doc._id},{sort:{created_at:-1},
 		transform: function(doc){ doc.countupVoteAnsObj = Votes.find({answer_id: doc._id,upvote:1})
                         doc.countdownVoteAnsObj = Votes.find({answer_id: doc._id,downvote:1})
@@ -3386,25 +3390,26 @@ userfollow: function(q_id) {
 		}
 	},
 	comment_insert: function(q_id,comment) {
+	var q_comment_ids = []
 	 if(Meteor.userId() == null){
                 return;
         }
-	thiselement = AnswersList.findOne({_id:q_id})	
-	//console.log(thiselement)
+//	console.log(q_id)
+	var thiselement = AnswersList.findOne({_id:q_id})
 	if (typeof thiselement.topic_id == 'undefined'){
 	var q_id = thiselement._id;
         var q_text = thiselement.ans;
         var q_date = thiselement.created_at
         var q_uid = thiselement.u_id
         var q_qid = thiselement.question_id
-        if (this.comment_ids != null){
-        var q_comment_ids = thiselement.comment_ids;
+        if (thiselement.comment_ids != null){
+        q_comment_ids = thiselement.comment_ids;
         }else{
-        var q_comment_ids = [];
+        q_comment_ids = [];
         }
         CommentsList.insert({
                 comment: comment,
-                answer_id: thiselement._id,
+                answer_id: q_id,
                 u_id: Meteor.userId(),
                 created_at: new Date(),
                 commentreply_ids: [],
@@ -3412,7 +3417,9 @@ userfollow: function(q_id) {
         q_comment_ids.push(docsInserted)
         AnswersList.update({_id: q_id}, {ans: q_text, comment_ids: q_comment_ids, created_at: q_date, u_id:q_uid, question_id:q_qid })
         Notification.insert({u_id:q_uid,follower_id:Meteor.userId(),is_seen:0,is_unfollowed:0,is_topic:0,is_type:"comment",notify_id:docsInserted,created_at:new Date(),is_f_notify:0})
+	return
         });
+	return
 	}else{
 	var q_id = thiselement._id;
         var q_text = thiselement.text;
